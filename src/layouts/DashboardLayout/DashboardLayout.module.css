@@ -1,0 +1,28 @@
+.layout {
+  min-height: 100vh;
+  background-color: var(--color-bg-white);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.main {
+  display: flex;
+  gap: 27px;
+  padding: 27px 18px;
+  min-height: calc(100vh - var(--header-height));
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .main {
+    flex-direction: column;
+    padding: 16px;
+    gap: 16px;
+  }
+}
