@@ -1,0 +1,172 @@
+generator client {
+  provider = "prisma-client-js"
+  
+}
+
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model appt_bookings {
+  id               String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  patient_id       String?     @db.Uuid
+  slot_id          String?     @db.Uuid
+  status           String?     @default("Pending")
+  is_walk_in       Boolean?    @default(false)
+  reason_for_visit String?
+  users            users?      @relation(fields: [patient_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  appt_slots       appt_slots? @relation(fields: [slot_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This table contains exclusion constraints and requires additional setup for migrations. Visit https://pris.ly/d/exclusion-constraints for more info.
+model appt_slots {
+  id            String                   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  clinician_id  String?                  @db.Uuid
+  time_range    Unsupported("tstzrange")
+  status        String?                  @default("Available")
+  version       Int?                     @default(1)
+  appt_bookings appt_bookings[]
+  users         users?                   @relation(fields: [clinician_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model billing_invoices {
+  id                 String               @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  patient_id         String?              @db.Uuid
+  encounter_id       String?              @db.Uuid
+  total_amount       Decimal?             @default(0.00) @db.Decimal(12, 2)
+  status             String?              @default("Draft")
+  patient_encounters patient_encounters?  @relation(fields: [encounter_id], references: [id], onUpdate: NoAction)
+  users              users?               @relation(fields: [patient_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  billing_line_items billing_line_items[]
+}
+
+model billing_line_items {
+  id               String            @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  invoice_id       String?           @db.Uuid
+  description      String
+  cost             Decimal           @db.Decimal(10, 2)
+  billing_invoices billing_invoices? @relation(fields: [invoice_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model lab_orders {
+  id                 String              @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  encounter_id       String?             @db.Uuid
+  priority           String?             @default("Routine")
+  status             String?             @default("Ordered")
+  patient_encounters patient_encounters? @relation(fields: [encounter_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  lab_test_items     lab_test_items[]
+}
+
+model lab_results {
+  id               String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  test_item_id     String?         @db.Uuid
+  result_value     String?
+  abnormality_flag String?
+  file_url         String?
+  is_verified      Boolean?        @default(false)
+  verified_by      String?         @db.Uuid
+  lab_test_items   lab_test_items? @relation(fields: [test_item_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users            users?          @relation(fields: [verified_by], references: [id], onUpdate: NoAction)
+}
+
+model lab_test_items {
+  id          String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  order_id    String?       @db.Uuid
+  test_name   String
+  lab_results lab_results[]
+  lab_orders  lab_orders?   @relation(fields: [order_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model patient_allergies {
+  id             String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  chart_id       String?         @db.Uuid
+  allergen_name  String
+  severity       String?
+  patient_charts patient_charts? @relation(fields: [chart_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model patient_charts {
+  id                 String               @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  patient_id         String?              @unique @db.Uuid
+  blood_type         String?              @db.VarChar(5)
+  dob                DateTime             @db.Date
+  patient_allergies  patient_allergies[]
+  users              users?               @relation(fields: [patient_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  patient_encounters patient_encounters[]
+}
+
+model patient_encounters {
+  id                    String                  @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  chart_id              String?                 @db.Uuid
+  clinician_id          String?                 @db.Uuid
+  date                  DateTime?               @default(now()) @db.Timestamptz(6)
+  status                String?                 @default("Open")
+  billing_invoices      billing_invoices[]
+  lab_orders            lab_orders[]
+  patient_charts        patient_charts?         @relation(fields: [chart_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users                 users?                  @relation(fields: [clinician_id], references: [id], onUpdate: NoAction)
+  patient_notes_soap    patient_notes_soap[]
+  patient_prescriptions patient_prescriptions[]
+}
+
+model patient_notes_soap {
+  id                 String              @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  encounter_id       String?             @db.Uuid
+  subjective         String?
+  objective          String?
+  assessment         String?
+  plan               String?
+  vitals             Json?
+  patient_encounters patient_encounters? @relation(fields: [encounter_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model patient_prescriptions {
+  id                 String              @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  encounter_id       String?             @db.Uuid
+  medication_name    String
+  dosage             String?
+  frequency          String?
+  duration           String?
+  patient_encounters patient_encounters? @relation(fields: [encounter_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model roles {
+  id    Int     @id @default(autoincrement())
+  name  String  @unique
+  users users[]
+}
+
+model system_audit_logs {
+  id         BigInt    @id @default(autoincrement())
+  table_name String?
+  record_id  String?   @db.Uuid
+  action     String?
+  changed_by String?   @db.Uuid
+  old_data   Json?
+  new_data   Json?
+  changed_at DateTime? @default(now()) @db.Timestamptz(6)
+  users      users?    @relation(fields: [changed_by], references: [id], onUpdate: NoAction)
+}
+
+model users {
+  id                 String               @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  first_name         String
+  last_name          String
+  email              String               @unique @db.Citext
+  phone_number       String?              @unique
+  password_hash      String
+  role_id            Int?
+  is_active          Boolean?             @default(true)
+  created_at         DateTime?            @default(now()) @db.Timestamptz(6)
+  profile_image      Bytes?
+  appt_bookings      appt_bookings[]
+  appt_slots         appt_slots[]
+  billing_invoices   billing_invoices[]
+  lab_results        lab_results[]
+  patient_charts     patient_charts?
+  patient_encounters patient_encounters[]
+  system_audit_logs  system_audit_logs[]
+  roles              roles?               @relation(fields: [role_id], references: [id], onDelete: Restrict, onUpdate: NoAction)
+}
