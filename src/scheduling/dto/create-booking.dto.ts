@@ -16,4 +16,8 @@ export class CreateBookingDto {
   @IsOptional()
   @IsString()
   reasonForVisit?: string;
+
+  @IsUUID()
+  slotId!: string;
+
 }
