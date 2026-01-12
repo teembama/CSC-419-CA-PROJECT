@@ -1,0 +1,152 @@
+.sidebar {
+  width: 240px;
+  min-width: 240px;
+  background: #fff;
+  border-right: 1px solid #E5E7EB;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebarOpen {
+  display: flex;
+}
+
+.sidebarBox {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 16px;
+}
+
+.navHeader {
+  margin-bottom: 24px;
+}
+
+.navHeaderPanel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.navHeaderTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: #6B7280;
+}
+
+.sectionTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: #9CA3AF;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.mt24 {
+  margin-top: 24px;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #4B5563;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+
+.navItem:hover {
+  background: #F3F4F6;
+  color: #1F2937;
+}
+
+.navItemActive {
+  background: #00B8D4;
+  color: #fff;
+}
+
+.navItemActive:hover {
+  background: #00A3BD;
+  color: #fff;
+}
+
+.navItemActive .navItemIcon svg {
+  stroke: #fff;
+}
+
+.navItemIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+.navItemIcon svg {
+  stroke: currentColor;
+}
+
+.logout {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #EF4444;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  margin-top: auto;
+  width: 100%;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.logout:hover {
+  background: #FEF2F2;
+}
+
+.logoutIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logoutIcon svg {
+  stroke: #EF4444;
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+
+  .sidebarOpen {
+    transform: translateX(0);
+  }
+}

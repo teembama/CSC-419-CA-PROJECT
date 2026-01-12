@@ -1,0 +1,390 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.titleSection {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.title {
+  font-size: var(--font-h7-size);
+  font-weight: var(--font-h7-weight);
+  line-height: var(--font-h7-line-height);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.welcomeText {
+  font-size: var(--font-b4-size);
+  font-weight: var(--font-b4-weight);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+/* Top Row - Appointment and Notifications */
+.topRow {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 24px;
+}
+
+/* Upcoming Appointment Card */
+.upcomingAppointmentCard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  background-color: var(--color-bg-white);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+}
+
+.appointmentHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.appointmentLabel {
+  font-size: var(--font-b3-size);
+  font-weight: 600;
+  background: linear-gradient(90deg, #03A5FF 0%, #1FC16B 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.appointmentDetails {
+  padding: 12px 16px;
+  background-color: var(--color-bg-white);
+  border: 1px solid var(--color-border-light);
+  border-radius: 5px;
+}
+
+.appointmentInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.appointmentDateTime {
+  font-size: var(--font-b3-size);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.appointmentDoctor {
+  font-size: var(--font-b4-size);
+  font-weight: var(--font-b4-weight);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.appointmentDepartment {
+  font-size: var(--font-b5-size);
+  font-weight: var(--font-b5-weight);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.appointmentActions {
+  display: flex;
+  gap: 12px;
+}
+
+/* Notifications Card */
+.notificationsCard {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  background-color: var(--color-bg-white);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  height: 100%;
+}
+
+.notificationsHeader {
+  font-size: var(--font-b2-size);
+  font-weight: 600;
+  background: linear-gradient(90deg, #03A5FF 0%, #1FC16B 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 16px 0;
+}
+
+.notificationsEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 12px;
+  padding: 24px;
+}
+
+.notificationsEmptyIcon {
+  color: #D1D5DB;
+}
+
+.notificationsEmptyText {
+  font-size: var(--font-b4-size);
+  color: var(--color-text-light);
+  text-align: center;
+  margin: 0;
+}
+
+/* Quick Actions Section */
+.quickActionsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sectionTitle {
+  font-size: var(--font-b2-size);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.quickActionsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.quickActionCard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  background-color: var(--color-bg-white);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  transition: border-color 0.2s ease;
+}
+
+.quickActionCard:hover {
+  border-color: var(--color-primary);
+}
+
+.quickActionIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+.quickActionInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.quickActionInfo h4 {
+  font-size: var(--font-b3-size);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.quickActionInfo p {
+  font-size: var(--font-b5-size);
+  color: var(--color-text-light);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.quickActionButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  background-color: transparent;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  font-size: var(--font-b4-size);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  text-decoration: none;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+  cursor: pointer;
+}
+
+.quickActionButton:hover {
+  border-color: var(--color-primary);
+  background-color: rgba(3, 165, 255, 0.05);
+}
+
+.quickActionButtonPrimary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  background-color: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-b4-size);
+  font-weight: 500;
+  color: white;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+  cursor: pointer;
+}
+
+.quickActionButtonPrimary:hover {
+  background-color: #0284C7;
+}
+
+/* Bottom Row - Health Summary and Billing */
+.bottomRow {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 24px;
+}
+
+/* Health Summary Card */
+.healthSummaryCard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background-color: var(--color-bg-white);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+}
+
+.healthSummaryHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-b3-size);
+  font-weight: 600;
+  background: linear-gradient(90deg, #03A5FF 0%, #1FC16B 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.healthSummaryContent {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background-color: var(--color-bg-light);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+}
+
+.healthItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.healthItemIcon {
+  flex-shrink: 0;
+}
+
+.healthItemLabel {
+  font-size: var(--font-b4-size);
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.healthItemValue {
+  font-size: var(--font-b4-size);
+  color: var(--color-text-primary);
+  margin-left: 4px;
+}
+
+/* Billing Card */
+.billingCard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background-color: var(--color-bg-white);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+}
+
+.billingHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.billingHeader h3 {
+  font-size: var(--font-b1-size);
+  font-weight: 600;
+  background: linear-gradient(90deg, #03A5FF 0%, #1FC16B 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+}
+
+.billingBalance {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.balanceLabel {
+  font-size: var(--font-b4-size);
+  color: var(--color-text-light);
+}
+
+.balanceAmount {
+  font-size: var(--font-b1-size);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .quickActionsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .topRow {
+    grid-template-columns: 1fr;
+  }
+
+  .bottomRow {
+    grid-template-columns: 1fr;
+  }
+
+  .notificationsCard {
+    min-height: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .quickActionsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .appointmentActions {
+    flex-direction: column;
+  }
+}

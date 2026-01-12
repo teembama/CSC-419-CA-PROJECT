@@ -1,0 +1,157 @@
+.labsWrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.contentTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1F2937;
+  margin: 0;
+}
+
+.primaryBtn {
+  padding: 10px 20px;
+  background: #00B8D4;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.statOrange {
+  border-left: 4px solid #F59E0B;
+}
+
+.statRed {
+  border-left: 4px solid #EF4444;
+}
+
+.statGreen {
+  border-left: 4px solid #10B981;
+}
+
+.statIcon img {
+  width: 32px;
+  height: 32px;
+}
+
+.statTitle {
+  font-size: 14px;
+  color: #6B7280;
+}
+
+.statValue {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1F2937;
+}
+
+.tables {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.tableCard {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.tableCardHeader {
+  padding: 16px 20px;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.tableCardHeader h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1F2937;
+  margin: 0;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  text-align: left;
+  padding: 12px 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6B7280;
+  background: #F9FAFB;
+}
+
+.table td {
+  padding: 12px 20px;
+  font-size: 14px;
+  color: #4B5563;
+  border-bottom: 1px solid #F3F4F6;
+}
+
+.pill {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.pillStable {
+  background: #D1FAE5;
+  color: #059669;
+}
+
+.pillUrgent {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+
+.pillPending {
+  background: #FEF3C7;
+  color: #D97706;
+}
+
+.linkBtn {
+  background: none;
+  border: none;
+  color: #00B8D4;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .statsRow {
+    grid-template-columns: 1fr;
+  }
+}

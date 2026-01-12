@@ -1,0 +1,275 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  font-size: var(--font-h7-size);
+  font-weight: var(--font-h7-weight);
+  line-height: var(--font-h7-line-height);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+/* Sections */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sectionTitle {
+  font-size: var(--font-b2-size);
+  font-weight: 600;
+  background: linear-gradient(90deg, #03A5FF 0%, #1FC16B 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+}
+
+/* Upcoming Appointment Card */
+.upcomingCard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background-color: var(--color-bg-white);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+}
+
+.upcomingHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.upcomingDateTime {
+  font-size: var(--font-b3-size);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+/* Doctor Card */
+.doctorCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: var(--color-bg-white);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+}
+
+.doctorInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.doctorAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.doctorDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.doctorName {
+  font-size: var(--font-b3-size);
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.departmentRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #22C55E;
+}
+
+.department {
+  font-size: var(--font-b5-size);
+  color: var(--color-text-light);
+}
+
+/* Status Badge */
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  background-color: rgba(34, 197, 94, 0.1);
+  border: 1px solid #22C55E;
+  border-radius: var(--radius-full);
+  font-size: var(--font-b5-size);
+  font-weight: 500;
+  color: #22C55E;
+}
+
+/* Appointment Actions */
+.appointmentActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cancelBtn {
+  padding: 8px 16px;
+  background: none;
+  border: none;
+  font-size: var(--font-b4-size);
+  font-weight: 500;
+  color: #EF4444;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.cancelBtn:hover {
+  opacity: 0.8;
+}
+
+/* View More Button */
+.viewMoreBtn {
+  padding: 8px 16px;
+  background-color: white;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  font-size: var(--font-b4-size);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.viewMoreBtn:hover {
+  border-color: var(--color-primary);
+}
+
+/* Past Appointments Grid */
+.pastAppointmentsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.pastCard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  background-color: var(--color-bg-white);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+}
+
+.pastCardHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.pastAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.pastInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.pastDate {
+  font-size: var(--font-b4-size);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.pastTime {
+  font-size: var(--font-b5-size);
+  color: var(--color-text-light);
+}
+
+.pastDoctor {
+  font-size: var(--font-b4-size);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin-top: 4px;
+}
+
+.pastDepartment {
+  font-size: var(--font-b5-size);
+  color: var(--color-text-light);
+}
+
+.viewSummaryBtn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 16px;
+  background-color: transparent;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  font-size: var(--font-b4-size);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.viewSummaryBtn:hover {
+  border-color: var(--color-primary);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .pastAppointmentsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .sectionHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .appointmentActions {
+    flex-wrap: wrap;
+  }
+
+  .pastCardHeader {
+    flex-direction: column;
+  }
+}

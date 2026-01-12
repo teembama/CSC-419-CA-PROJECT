@@ -1,98 +1,301 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# CityCare Healthcare Management System
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A full-stack healthcare management system built with NestJS (backend) and React + Vite (frontend).
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Project Structure
 
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
-```bash
-$ npm install
+```
+CSC-419-CA-PROJECT/
+├── src/                    # Backend source code (NestJS)
+│   ├── iam/               # Identity & Access Management
+│   ├── scheduling/        # Appointment scheduling
+│   ├── clinical/          # Clinical/patient management
+│   ├── billing/           # Billing & invoices
+│   ├── lab/               # Laboratory orders & results
+│   └── admin/             # Admin functionality
+├── frontend/              # Frontend source code (React + Vite)
+│   └── src/
+│       ├── pages/         # Page components
+│       ├── components/    # Reusable components
+│       ├── services/      # API services
+│       └── context/       # React context
+├── prisma/                # Database schema
+└── CityCareFinalDatabase  # PostgreSQL database dump
 ```
 
-## Compile and run the project
+## Prerequisites
+
+- **Node.js** v18+ (check with `node --version`)
+- **npm** v9+ (check with `npm --version`)
+- **PostgreSQL** v15+ (check with `psql --version`)
+
+## Quick Start
+
+### 1. Clone the Repository
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+git clone <repository-url>
+cd CSC-419-CA-PROJECT
 ```
 
-## Run tests
+### 2. Database Setup
+
+#### Create the database and restore from dump:
 
 ```bash
-# unit tests
-$ npm run test
+# Create the database
+createdb citycare_db
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+# Restore the database from the dump file
+pg_restore -d citycare_db CityCareFinalDatabase
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+**Alternative: If pg_restore doesn't work, create manually:**
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+# Connect to PostgreSQL
+psql -U postgres
+
+# In psql, run:
+CREATE DATABASE citycare_db;
+\c citycare_db
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "citext";
+CREATE EXTENSION IF NOT EXISTS "btree_gist";
+\q
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Then run Prisma migrations:
+```bash
+npx prisma db push
+```
 
-## Resources
+### 3. Backend Setup
 
-Check out a few resources that may come in handy when working with NestJS:
+```bash
+# Install dependencies
+npm install
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+# Create environment file
+cp .env.example .env
 
-## Support
+# Edit .env if needed (default values work for local development)
+# DATABASE_URL="postgresql://postgres:postgres@localhost:5432/citycare_db"
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+# Generate Prisma client
+npx prisma generate
 
-## Stay in touch
+# Start the backend server
+npm run start:dev
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+The backend will run on **http://localhost:3000**
+
+### 4. Frontend Setup
+
+```bash
+# Navigate to frontend directory
+cd frontend
+
+# Install dependencies
+npm install
+
+# Start the frontend development server
+npm run dev
+```
+
+The frontend will run on **http://localhost:5173**
+
+## Running the Application
+
+### Start Both Servers
+
+**Terminal 1 - Backend:**
+```bash
+cd CSC-419-CA-PROJECT
+npm run start:dev
+```
+
+**Terminal 2 - Frontend:**
+```bash
+cd CSC-419-CA-PROJECT/frontend
+npm run dev
+```
+
+### Access the Application
+
+- **Frontend:** http://localhost:5173
+- **Backend API:** http://localhost:3000
+
+---
+
+## Demo Accounts
+
+Use these accounts to test the application:
+
+### Patient Account
+| Field | Value |
+|-------|-------|
+| **Email** | `patient@citycare.com` |
+| **Password** | `password123` |
+| **Role** | Patient |
+
+### Clinician Account
+| Field | Value |
+|-------|-------|
+| **Email** | `clinician@citycare.com` |
+| **Password** | `password123` |
+| **Role** | Clinician |
+
+### Admin Account
+| Field | Value |
+|-------|-------|
+| **Email** | `admin@citycare.com` |
+| **Password** | `password123` |
+| **Role** | Admin |
+
+---
+
+## Creating New Demo Accounts
+
+If the demo accounts don't exist in your database, you can create them:
+
+### Option 1: Register via the App
+1. Go to http://localhost:5173/signup (Patient) or http://localhost:5173/clinician/signup (Clinician)
+2. Fill in the registration form
+3. Log in with your new credentials
+
+### Option 2: Create via API
+```bash
+# Create a Patient account
+curl -X POST http://localhost:3000/iam/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "patient@citycare.com",
+    "password": "password123",
+    "firstName": "Demo",
+    "lastName": "Patient",
+    "role": "Patient"
+  }'
+
+# Create a Clinician account
+curl -X POST http://localhost:3000/iam/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "clinician@citycare.com",
+    "password": "password123",
+    "firstName": "Dr. Demo",
+    "lastName": "Clinician",
+    "role": "Clinician"
+  }'
+```
+
+---
+
+## Features
+
+### Patient Features
+- View and book appointments
+- View medical records
+- View lab results
+- View and pay bills
+- Manage profile
+
+### Clinician Features
+- View daily schedule and appointments
+- Manage patients
+- Create encounters and SOAP notes
+- Order lab tests
+- Write prescriptions
+
+### Admin Features
+- User management
+- System audit logs
+- Role assignment
+
+---
+
+## API Endpoints
+
+### Authentication
+- `POST /iam/register` - Register new user
+- `POST /iam/login` - Login
+- `POST /iam/refresh` - Refresh token
+
+### Scheduling
+- `GET /scheduling/clinicians` - Get all clinicians
+- `GET /scheduling/slots/available` - Get available slots
+- `POST /scheduling/bookings` - Create booking
+- `GET /scheduling/bookings/patient/:id` - Get patient bookings
+- `GET /scheduling/clinicians/:id/schedule` - Get clinician schedule
+
+### Clinical
+- `GET /clinical/patients/search` - Search patients
+- `GET /clinical/charts/:patientId` - Get patient chart
+- `POST /clinical/encounters` - Create encounter
+
+### Labs
+- `GET /lab/orders` - Get lab orders
+- `POST /lab/orders` - Create lab order
+
+### Billing
+- `GET /billing/invoices/patient/:id` - Get patient invoices
+
+---
+
+## Troubleshooting
+
+### Database Connection Issues
+```bash
+# Check if PostgreSQL is running
+pg_isready
+
+# Check database exists
+psql -l | grep citycare_db
+```
+
+### Port Already in Use
+```bash
+# Find process using port 3000
+lsof -i :3000
+
+# Kill the process
+kill -9 <PID>
+```
+
+### Prisma Issues
+```bash
+# Regenerate Prisma client
+npx prisma generate
+
+# Reset database (WARNING: deletes all data)
+npx prisma db push --force-reset
+```
+
+---
+
+## Tech Stack
+
+### Backend
+- **NestJS** - Node.js framework
+- **Prisma** - Database ORM
+- **PostgreSQL** - Database
+- **JWT** - Authentication
+- **bcrypt** - Password hashing
+
+### Frontend
+- **React 18** - UI library
+- **Vite** - Build tool
+- **React Router** - Navigation
+- **Axios** - HTTP client
+- **TypeScript** - Type safety
+
+---
+
+## Team
+
+CSC-419 Course Project
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+MIT

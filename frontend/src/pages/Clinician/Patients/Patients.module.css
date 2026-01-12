@@ -1,0 +1,258 @@
+.patientsWrapper {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.pageTitle {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1F2937;
+  margin: 0 0 24px 0;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 24px;
+}
+
+.patientList {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #F3F4F6;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.searchBox input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  outline: none;
+}
+
+.searchBox svg {
+  color: #9CA3AF;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.patientCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.patientCard:hover {
+  background: #F9FAFB;
+}
+
+.patientCard.active {
+  background: #E0F7FA;
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+
+.patientInfo {
+  flex: 1;
+}
+
+.patientInfo h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1F2937;
+  margin: 0;
+}
+
+.patientId, .nextAppt {
+  font-size: 12px;
+  color: #6B7280;
+  margin: 2px 0 0;
+}
+
+.statusCol {
+  text-align: right;
+}
+
+.statusLabel {
+  font-size: 12px;
+  color: #6B7280;
+  display: block;
+}
+
+.status {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.complete { color: #10B981; }
+.processing { color: #F59E0B; }
+
+.patientDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.detailsHeader {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.scheduleBtn {
+  padding: 10px 20px;
+  background: #00B8D4;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.detailsCard {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.patientHeader {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.avatarLarge {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+}
+
+.patientHeader h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1F2937;
+  margin: 0;
+}
+
+.patientHeader p {
+  font-size: 14px;
+  color: #6B7280;
+  margin: 4px 0;
+}
+
+.tags {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.tagPurple, .tagGreen {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.tagPurple { background: #EDE9FE; color: #7C3AED; }
+.tagGreen { background: #D1FAE5; color: #059669; }
+
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.infoCard {
+  background: #F9FAFB;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.infoCard h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1F2937;
+  margin: 0 0 12px 0;
+}
+
+.appointmentDetail h4 {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.appointmentDetail p {
+  font-size: 12px;
+  color: #6B7280;
+  margin: 4px 0 12px;
+}
+
+.appointmentActions {
+  display: flex;
+  gap: 8px;
+}
+
+.btnPrimary {
+  padding: 8px 16px;
+  background: #00B8D4;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btnSecondary {
+  padding: 8px 16px;
+  background: transparent;
+  color: #4B5563;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.vitalsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.vitalsGrid div {
+  font-size: 12px;
+  color: #6B7280;
+}
+
+.vitalsGrid strong {
+  display: block;
+  font-size: 18px;
+  color: #1F2937;
+}
+
+@media (max-width: 1024px) {
+  .content {
+    grid-template-columns: 1fr;
+  }
+}

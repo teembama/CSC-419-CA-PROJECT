@@ -1,0 +1,121 @@
+/* CityCare Global Styles */
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap');
+@import './variables.css';
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-family);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-white);
+  line-height: 1.5;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input, textarea, select {
+  font-family: inherit;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Typography Classes */
+.text-gradient {
+  background: var(--color-primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.heading-5 {
+  font-size: var(--font-h5-size);
+  font-weight: var(--font-h5-weight);
+  line-height: var(--font-h5-line-height);
+}
+
+.heading-7 {
+  font-size: var(--font-h7-size);
+  font-weight: var(--font-h7-weight);
+  line-height: var(--font-h7-line-height);
+}
+
+.body-1 {
+  font-size: var(--font-b1-size);
+  font-weight: var(--font-b1-weight);
+  line-height: var(--font-b1-line-height);
+}
+
+.body-2 {
+  font-size: var(--font-b2-size);
+  font-weight: var(--font-b2-weight);
+  line-height: var(--font-b2-line-height);
+}
+
+.body-3 {
+  font-size: var(--font-b3-size);
+  font-weight: var(--font-b3-weight);
+  line-height: var(--font-b3-line-height);
+}
+
+.body-4 {
+  font-size: var(--font-b4-size);
+  font-weight: var(--font-b4-weight);
+  line-height: var(--font-b4-line-height);
+}
+
+.body-5 {
+  font-size: var(--font-b5-size);
+  font-weight: var(--font-b5-weight);
+  line-height: var(--font-b5-line-height);
+}
+
+/* Utility Classes */
+.text-muted {
+  color: var(--color-text-muted);
+}
+
+.text-primary {
+  color: var(--color-primary);
+}
+
+.text-error {
+  color: var(--color-error);
+}
+
+.text-success {
+  color: var(--color-success);
+}
+
+/* App Layout */
+#root {
+  min-height: 100vh;
+  width: 100%;
+}

@@ -1,0 +1,656 @@
+/* Profile Page Layout */
+.profilePage {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  min-height: 100%;
+}
+
+/* Page Header */
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.headerLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pageTitle {
+  font-family: 'Instrument Sans', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1.5;
+  color: #4A4A4A;
+  margin: 0;
+}
+
+.pageDescription {
+  font-family: 'Instrument Sans', sans-serif;
+  font-weight: 500;
+  font-size: 10px;
+  line-height: 1.5;
+  color: #4A4A4A;
+  margin: 0;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.breadcrumbItem {
+  font-family: 'Instrument Sans', sans-serif;
+  font-weight: 500;
+  font-size: 10px;
+  line-height: 1.5;
+  color: #777777;
+}
+
+.breadcrumbItemActive {
+  font-family: 'Instrument Sans', sans-serif;
+  font-weight: 500;
+  font-size: 10px;
+  line-height: 1.5;
+  color: #777777;
+}
+
+/* Tab Row */
+.tabRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tabSwitcher {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #E8E8E8;
+  border-radius: 10px;
+  padding: 6px 8px;
+  gap: 8px;
+}
+
+.tab {
+  font-family: 'Instrument Sans', sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #4A4A4A;
+  background: transparent;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab:hover {
+  background: rgba(3, 165, 255, 0.1);
+}
+
+.tabActive {
+  background: #03A5FF;
+  color: #ffffff;
+}
+
+.tabActive:hover {
+  background: #03A5FF;
+}
+
+.saveBtn {
+  font-family: 'Instrument Sans', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #ffffff;
+  background: #03A5FF;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.saveBtn:hover {
+  background: #0294e6;
+}
+
+/* Content Area - Two Column Layout */
+.contentArea {
+  display: flex;
+  gap: 20px;
+}
+
+/* Left Column */
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 220px;
+  flex-shrink: 0;
+}
+
+/* User Profile Card */
+.userCard {
+  background: #ffffff;
+  border: 1px solid #E8E8E8;
+  border-radius: 10px;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.avatarWrapper {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.editAvatarBtn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 24px;
+  height: 24px;
+  background: #03A5FF;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.editAvatarBtn:hover {
+  background: #0294e6;
+}
+
+.userName {
+  font-family: 'Instrument Sans', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #4A4A4A;
+  margin: 0 0 2px 0;
+}
+
+.userEmail {
+  font-family: 'Instrument Sans', sans-serif;
+  font-weight: 400;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #8E8E8E;
+  margin: 0 0 8px 0;
+}
+
+.statusTag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  background: #83EBC0;
+  border-radius: 4px;
+  font-family: 'Instrument Sans', sans-serif;
+  font-weight: 500;
+  font-size: 10px;
+  line-height: 1.5;
+  color: #1B8B61;
+}
+
+/* Quick Actions Card */
+.quickActionsCard {
+  background-color: #FFFFFF;
+  border-radius: 8px;
+  padding: 16px 14px;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.quickActionsTitle {
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1F2937;
+  margin: 0 0 14px 0;
+  display: block;
+  width: 100%;
+}
+
+.quickActionBtn {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  padding: 12px 14px;
+  background-color: #F0F9FF;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 10px;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+.quickActionBtn:last-child {
+  margin-bottom: 0;
+}
+
+.quickActionBtn:hover {
+  background-color: #E0F2FE;
+  border-color: #D1D5DB;
+}
+
+.quickActionIcon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.quickActionIcon.records {
+  background-color: #DBEAFE;
+}
+
+.quickActionIcon.share {
+  background-color: #E9D5FF;
+}
+
+.quickActionIconImg {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.quickActionText {
+  flex: 1;
+  font-family: 'Instrument Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: #1F2937;
+  white-space: nowrap;
+}
+
+.quickActionArrow {
+  font-size: 16px;
+  color: #9CA3AF;
+}
+
+/* Right Column */
+.rightColumn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Form Card */
+.formCard {
+  background: #ffffff;
+  border: 1px solid #E8E8E8;
+  border-radius: 10px;
+  padding: 20px 24px;
+}
+
+.formHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.formTitle {
+  font-family: 'Instrument Sans', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #4A4A4A;
+  margin: 0;
+}
+
+.editInfoBtn {
+  font-family: 'Instrument Sans', sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #4A4A4A;
+  background: #ffffff;
+  border: 1px solid #E8E8E8;
+  border-radius: 6px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.editInfoBtn:hover {
+  background: #f5f5f5;
+}
+
+/* Form Grid */
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px 20px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.formGroupFull {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  grid-column: span 2;
+}
+
+.threeColumnRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  grid-column: span 2;
+}
+
+.formLabel {
+  font-family: 'Instrument Sans', sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1.3;
+  color: #454A53;
+}
+
+.formInput {
+  width: 100%;
+  padding: 12px 14px;
+  background: #ffffff;
+  border: 1px solid #E9EAEB;
+  border-radius: 8px;
+  font-family: 'Instrument Sans', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.3;
+  color: #4A4A4A;
+  outline: none;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.formInput:focus {
+  border-color: #03A5FF;
+}
+
+.formInput::placeholder {
+  color: #9EA2AD;
+}
+
+.formInput:read-only {
+  background: #F9FAFB;
+  color: #6B7280;
+}
+
+.formSelect {
+  width: 100%;
+  padding: 12px 14px;
+  background: #ffffff;
+  border: 1px solid #E9EAEB;
+  border-radius: 8px;
+  font-family: 'Instrument Sans', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.3;
+  color: #4A4A4A;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%234A4A4A' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 40px;
+  box-sizing: border-box;
+}
+
+.formSelect:focus {
+  border-color: #03A5FF;
+}
+
+/* Input with Icon */
+.inputWithIcon {
+  position: relative;
+}
+
+.inputWithIcon .formInput {
+  padding-right: 44px;
+}
+
+.inputIcon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* Phone Input */
+.phoneInputWrapper {
+  display: flex;
+  gap: 8px;
+}
+
+.countryCodeSelect {
+  width: 90px;
+  padding: 12px 10px;
+  background: #ffffff;
+  border: 1px solid #E9EAEB;
+  border-radius: 8px;
+  font-family: 'Instrument Sans', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.3;
+  color: #4A4A4A;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='10' viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%234A4A4A' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 24px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.phoneInput {
+  flex: 1;
+  padding: 12px 14px;
+  background: #ffffff;
+  border: 1px solid #E9EAEB;
+  border-radius: 8px;
+  font-family: 'Instrument Sans', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.3;
+  color: #4A4A4A;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.phoneInput:focus {
+  border-color: #03A5FF;
+}
+
+/* Password Form */
+.passwordForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.passwordRow {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.passwordInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.passwordInputWrapper .formInput {
+  padding-right: 44px;
+}
+
+.eyeBtn {
+  position: absolute;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* Password Requirements */
+.passwordRequirements {
+  background: rgba(222, 243, 255, 0.5);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.requirementsTitle {
+  font-family: 'Instrument Sans', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #4A4A4A;
+  margin: 0 0 6px 0;
+}
+
+.requirementsList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.requirementsList li {
+  font-family: 'Instrument Sans', sans-serif;
+  font-weight: 400;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #4A4A4A;
+}
+
+.requirementsList li::before {
+  content: '· ';
+}
+
+.updatePasswordBtn {
+  align-self: flex-end;
+  font-family: 'Instrument Sans', sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #ffffff;
+  background: #03A5FF;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.updatePasswordBtn:hover {
+  background: #0294e6;
+}
+
+/* Responsive Design */
+@media (max-width: 900px) {
+  .contentArea {
+    flex-direction: column;
+  }
+
+  .leftColumn {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .userCard,
+  .quickActionsCard {
+    flex: 1;
+    min-width: 180px;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .formGroupFull {
+    grid-column: span 1;
+  }
+
+  .threeColumnRow {
+    grid-template-columns: 1fr;
+    grid-column: span 1;
+  }
+
+  .passwordRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .pageHeader {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .tabRow {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .tabSwitcher {
+    justify-content: center;
+  }
+
+  .leftColumn {
+    flex-direction: column;
+  }
+
+  .userCard,
+  .quickActionsCard {
+    width: 100%;
+  }
+}
