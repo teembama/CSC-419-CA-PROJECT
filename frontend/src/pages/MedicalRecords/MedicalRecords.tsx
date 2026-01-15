@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import styles from './MedicalRecords.module.css';
 import { ChevronRightIcon, WarningIcon } from '../../components';
 import { useAuth } from '../../context';
-import { clinicalAPI, labAPI } from '../../services/api';
+import { clinicalAPI, labAPI, schedulingAPI } from '../../services/api';
 import avatar from '../../assets/avatar.png';
 
 type TabType = 'overview' | 'visit-history';
@@ -76,24 +77,53 @@ interface LabResult {
   result_date: string;
 }
 
+interface PastAppointment {
+  id: string;
+  status: string;
+  reasonForVisit?: string;
+  startTime?: string;
+  slot?: {
+    startTime: string;
+    endTime: string;
+  };
+  clinician?: {
+    id: string;
+    first_name: string;
+    last_name: string;
+  };
+}
+
 export const MedicalRecords: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const location = useLocation();
+  const initialTab = (location.state as { tab?: TabType })?.tab || 'overview';
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab);
   const [chart, setChart] = useState<PatientChart | null>(null);
   const [encounters, setEncounters] = useState<Encounter[]>([]);
+  const [pastAppointments, setPastAppointments] = useState<PastAppointment[]>([]);
   const [labResults, setLabResults] = useState<LabResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedEncounter, setSelectedEncounter] = useState<Encounter | null>(null);
-  const [dateFilter, setDateFilter] = useState<string>('60'); // Default 60 days
+  const [selectedAppointment, setSelectedAppointment] = useState<PastAppointment | null>(null);
+  const [dateFilter, setDateFilter] = useState<string>('all'); // Default to all time when coming from appointments
   const { user } = useAuth();
+
+  // Update tab when navigating from appointments
+  useEffect(() => {
+    const navState = location.state as { tab?: TabType } | null;
+    if (navState?.tab) {
+      setActiveTab(navState.tab);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     const fetchMedicalData = async () => {
       if (!user?.id) return;
 
       try {
-        const [chartData, labData] = await Promise.all([
+        const [chartData, labData, bookingsData] = await Promise.all([
           clinicalAPI.getPatientChart(user.id).catch(() => null),
           labAPI.getPatientResults(user.id).catch(() => []),
+          schedulingAPI.getPatientBookings(user.id).catch(() => []),
         ]);
 
         setChart(chartData);
@@ -101,6 +131,14 @@ export const MedicalRecords: React.FC = () => {
         // Use encounters from chart data (already included in the response)
         const encountersFromChart = chartData?.patient_encounters || [];
         setEncounters(encountersFromChart);
+
+        // Filter past appointments (completed or past date)
+        const now = new Date();
+        const pastBookings = (bookingsData || []).filter((b: PastAppointment) => {
+          const startTime = b.slot?.startTime || b.startTime;
+          return startTime && new Date(startTime) <= now;
+        });
+        setPastAppointments(pastBookings);
 
         setLabResults(labData || []);
       } catch (error) {
@@ -160,6 +198,19 @@ export const MedicalRecords: React.FC = () => {
     const cutoffDate = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
     return encounterDate >= cutoffDate;
   });
+
+  // Filter past appointments by date
+  const filteredPastAppointments = pastAppointments.filter(appointment => {
+    if (dateFilter === 'all') return true;
+    const appointmentDate = new Date(appointment.slot?.startTime || appointment.startTime || '');
+    const now = new Date();
+    const daysAgo = parseInt(dateFilter, 10);
+    const cutoffDate = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
+    return appointmentDate >= cutoffDate;
+  });
+
+  // Combined visit history (encounters + appointments that don't have encounters yet)
+  const hasVisitData = filteredEncounters.length > 0 || filteredPastAppointments.length > 0;
 
   return (
     <div className={styles.container}>
@@ -331,44 +382,69 @@ export const MedicalRecords: React.FC = () => {
             {/* Visit History Tab Content */}
             {activeTab === 'visit-history' && (
               <div className={styles.visitHistory}>
-                {filteredEncounters.length > 0 ? (
-                  filteredEncounters.map((encounter) => {
-                    // Get chief complaint from SOAP notes subjective field
-                    const chiefComplaint = encounter.patient_notes_soap?.[0]?.subjective?.split('.')[0] || 'General consultation';
-                    // Format doctor name - avoid doubling "Dr." if already in first_name
-                    const doctorName = encounter.users
-                      ? (encounter.users.first_name?.startsWith('Dr.')
-                          ? `${encounter.users.first_name} ${encounter.users.last_name}`
-                          : `Dr. ${encounter.users.first_name} ${encounter.users.last_name}`)
-                      : 'CityCare Medical Staff';
-                    return (
-                      <div key={encounter.id} className={styles.visitCard}>
-                        <div className={styles.visitInfo}>
-                          <img
-                            src={avatar}
-                            alt={doctorName}
-                            className={styles.visitAvatar}
-                          />
-                          <div className={styles.visitDetails}>
-                            <span className={styles.visitDoctor}>{doctorName}</span>
-                            <span className={styles.visitDepartment}>Medical Visit</span>
-                            <span className={styles.visitReason}>
-                              Reason: {chiefComplaint}
-                            </span>
+                {hasVisitData ? (
+                  <>
+                    {/* Clinical Encounters with full records */}
+                    {filteredEncounters.map((encounter) => {
+                      const chiefComplaint = encounter.patient_notes_soap?.[0]?.subjective?.split('.')[0] || 'General consultation';
+                      const doctorName = encounter.users
+                        ? (encounter.users.first_name?.startsWith('Dr.')
+                            ? `${encounter.users.first_name} ${encounter.users.last_name}`
+                            : `Dr. ${encounter.users.first_name} ${encounter.users.last_name}`)
+                        : 'CityCare Medical Staff';
+                      return (
+                        <div key={`encounter-${encounter.id}`} className={styles.visitCard}>
+                          <div className={styles.visitInfo}>
+                            <img src={avatar} alt={doctorName} className={styles.visitAvatar} />
+                            <div className={styles.visitDetails}>
+                              <span className={styles.visitDoctor}>{doctorName}</span>
+                              <span className={styles.visitDepartment}>Medical Visit</span>
+                              <span className={styles.visitReason}>Reason: {chiefComplaint}</span>
+                            </div>
+                          </div>
+                          <div className={styles.visitActions}>
+                            <button
+                              className={styles.viewDetailsBtn}
+                              onClick={() => setSelectedEncounter(encounter)}
+                            >
+                              View Details
+                            </button>
+                            <span className={styles.visitDate}>{formatDate(encounter.date)}</span>
                           </div>
                         </div>
-                        <div className={styles.visitActions}>
-                          <button
-                            className={styles.viewDetailsBtn}
-                            onClick={() => setSelectedEncounter(encounter)}
-                          >
-                            View Details
-                          </button>
-                          <span className={styles.visitDate}>{formatDate(encounter.date)}</span>
+                      );
+                    })}
+
+                    {/* Past Appointments */}
+                    {filteredPastAppointments.map((appointment) => {
+                      const appointmentDate = appointment.slot?.startTime || appointment.startTime || '';
+                      const doctorName = appointment.clinician
+                        ? (appointment.clinician.first_name?.startsWith('Dr.')
+                            ? `${appointment.clinician.first_name} ${appointment.clinician.last_name}`
+                            : `Dr. ${appointment.clinician.first_name} ${appointment.clinician.last_name}`)
+                        : 'Your Doctor';
+                      return (
+                        <div key={`appointment-${appointment.id}`} className={styles.visitCard}>
+                          <div className={styles.visitInfo}>
+                            <img src={avatar} alt={doctorName} className={styles.visitAvatar} />
+                            <div className={styles.visitDetails}>
+                              <span className={styles.visitDoctor}>{doctorName}</span>
+                              <span className={styles.visitDepartment}>Appointment</span>
+                              <span className={styles.visitReason}>
+                                Reason: {appointment.reasonForVisit || 'General Consultation'}
+                              </span>
+                            </div>
+                          </div>
+                          <div className={styles.visitActions}>
+                            <span className={`${styles.statusBadge} ${styles[`status${appointment.status}`] || ''}`}>
+                              {appointment.status}
+                            </span>
+                            <span className={styles.visitDate}>{formatDate(appointmentDate)}</span>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })
+                      );
+                    })}
+                  </>
                 ) : (
                   <p style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
                     No visit history found

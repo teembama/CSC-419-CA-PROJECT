@@ -110,16 +110,31 @@ const ClinicianSignIn: React.FC = () => {
 
           <form onSubmit={handleSubmit}>
             {errors.general && (
-              <div style={{
-                padding: '12px',
-                backgroundColor: '#fee2e2',
-                border: '1px solid #ef4444',
-                borderRadius: '8px',
-                color: '#dc2626',
-                marginBottom: '16px',
-                fontSize: '14px'
-              }}>
-                {errors.general}
+              <div
+                role="alert"
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  padding: '12px 16px',
+                  marginBottom: '16px',
+                  backgroundColor: '#FEE2E2',
+                  border: '2px solid #EF4444',
+                  borderRadius: '8px',
+                  boxSizing: 'border-box',
+                }}
+              >
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  marginBottom: '4px'
+                }}>
+                  <span style={{ fontSize: '16px' }}>⚠️</span>
+                  <strong style={{ color: '#DC2626', fontSize: '14px' }}>Sign in failed</strong>
+                </div>
+                <div style={{ color: '#991B1B', fontSize: '13px', paddingLeft: '24px' }}>
+                  {errors.general}
+                </div>
               </div>
             )}
 

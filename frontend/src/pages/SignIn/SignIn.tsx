@@ -56,36 +56,39 @@ export const SignIn: React.FC = () => {
     setIsSubmitting(true);
     setErrors({});
 
-    const result = await login(formData.email, formData.password);
+    try {
+      const result = await login(formData.email, formData.password);
 
-    if (result.success) {
-      // Get the current user from localStorage to check role
-      const token = localStorage.getItem('accessToken');
-      if (token) {
-        try {
-          // Decode JWT to get role (basic decode without verification)
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          const userRole = payload.role;
+      if (result.success) {
+        // Get the current user from localStorage to check role
+        const token = localStorage.getItem('accessToken');
+        if (token) {
+          try {
+            // Decode JWT to get role (basic decode without verification)
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const userRole = payload.role;
 
-          // Staff roles should use the staff portal
-          const staffRoles = ['Clinician', 'LabTechnician', 'Staff', 'Admin'];
-          if (staffRoles.includes(userRole)) {
-            // Redirect staff to clinician portal
-            navigate('/clinician/dashboard');
-            setIsSubmitting(false);
-            return;
+            // Staff roles should use the staff portal
+            const staffRoles = ['Clinician', 'LabTechnician', 'Staff', 'Admin'];
+            if (staffRoles.includes(userRole)) {
+              // Redirect staff to clinician portal
+              navigate('/clinician/dashboard');
+              return;
+            }
+          } catch (e) {
+            // If we can't decode token, proceed to patient portal
+            console.warn('Could not decode token:', e);
           }
-        } catch (e) {
-          // If we can't decode token, proceed to patient portal
-          console.warn('Could not decode token:', e);
         }
+        navigate('/');
+      } else {
+        setErrors({ general: result.error || 'Login failed. Please try again.' });
       }
-      navigate('/');
-    } else {
-      setErrors({ general: result.error });
+    } catch (err) {
+      setErrors({ general: 'An unexpected error occurred. Please try again.' });
+    } finally {
+      setIsSubmitting(false);
     }
-
-    setIsSubmitting(false);
   };
 
   return (
@@ -102,16 +105,31 @@ export const SignIn: React.FC = () => {
 
             <form onSubmit={handleSubmit} className={styles.form}>
               {errors.general && (
-                <div style={{
-                  padding: '12px',
-                  backgroundColor: '#fee2e2',
-                  border: '1px solid #ef4444',
-                  borderRadius: '8px',
-                  color: '#dc2626',
-                  marginBottom: '16px',
-                  fontSize: '14px'
-                }}>
-                  {errors.general}
+                <div
+                  role="alert"
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    padding: '12px 16px',
+                    marginBottom: '16px',
+                    backgroundColor: '#FEE2E2',
+                    border: '2px solid #EF4444',
+                    borderRadius: '8px',
+                    boxSizing: 'border-box',
+                  }}
+                >
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    marginBottom: '4px'
+                  }}>
+                    <span style={{ fontSize: '16px' }}>⚠️</span>
+                    <strong style={{ color: '#DC2626', fontSize: '14px' }}>Sign in failed</strong>
+                  </div>
+                  <div style={{ color: '#991B1B', fontSize: '13px', paddingLeft: '24px' }}>
+                    {errors.general}
+                  </div>
                 </div>
               )}
 

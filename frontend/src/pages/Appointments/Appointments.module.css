@@ -42,6 +42,13 @@
   margin: 0;
 }
 
+/* Upcoming Appointments List */
+.upcomingAppointmentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 /* Upcoming Appointment Card */
 .upcomingCard {
   display: flex;
@@ -130,6 +137,12 @@
   font-size: var(--font-b5-size);
   font-weight: 500;
   color: #22C55E;
+}
+
+.statusBadge.statusPending {
+  background-color: rgba(245, 158, 11, 0.1);
+  border-color: #F59E0B;
+  color: #F59E0B;
 }
 
 /* Appointment Actions */

@@ -20,11 +20,16 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle auth errors
+// Handle auth errors (but not on login/register endpoints)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const isAuthEndpoint = error.config?.url?.includes('/auth/login') ||
+                           error.config?.url?.includes('/auth/register');
+
+    // Only redirect on 401 if it's NOT a login/register request
+    // (login failures should show error message, not redirect)
+    if (error.response?.status === 401 && !isAuthEndpoint) {
       localStorage.removeItem('accessToken');
       window.location.href = '/login';
     }

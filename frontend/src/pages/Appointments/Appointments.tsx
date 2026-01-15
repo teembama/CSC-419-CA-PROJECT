@@ -142,7 +142,12 @@ export const Appointments: React.FC = () => {
     return !startTime || new Date(startTime) <= now || b.status === 'Completed';
   });
 
-  const upcomingAppointment = upcomingBookings[0];
+  // Sort upcoming bookings by date (nearest first)
+  const sortedUpcomingBookings = [...upcomingBookings].sort((a, b) => {
+    const aTime = new Date(a.slot?.startTime || a.startTime || '').getTime();
+    const bTime = new Date(b.slot?.startTime || b.startTime || '').getTime();
+    return aTime - bTime;
+  });
 
   return (
     <div className={styles.container}>
@@ -154,7 +159,7 @@ export const Appointments: React.FC = () => {
       {/* Upcoming Appointments Section */}
       <div className={styles.section}>
         <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Upcoming Appointments</h2>
+          <h2 className={styles.sectionTitle}>Upcoming Appointments ({sortedUpcomingBookings.length})</h2>
           <Button size="small" onClick={handleBookAppointment}>Book Appointment</Button>
         </div>
 
@@ -162,54 +167,60 @@ export const Appointments: React.FC = () => {
           <div className={styles.upcomingCard}>
             <p style={{ padding: '20px', textAlign: 'center' }}>Loading...</p>
           </div>
-        ) : upcomingAppointment ? (
-          <div className={styles.upcomingCard}>
-            <div className={styles.upcomingHeader}>
-              <CalendarPlusIcon size={32} />
-              <span className={styles.upcomingDateTime}>
-                {formatDate(upcomingAppointment.slot?.startTime || upcomingAppointment.startTime || '')} | {formatTime(upcomingAppointment.slot?.startTime || upcomingAppointment.startTime || '')}
-              </span>
-            </div>
-
-            <div className={styles.doctorCard}>
-              <div className={styles.doctorInfo}>
-                <img
-                  src={avatar}
-                  alt={`Dr. ${upcomingAppointment.clinician?.first_name}`}
-                  className={styles.doctorAvatar}
-                />
-                <div className={styles.doctorDetails}>
-                  <span className={styles.doctorName}>
-                    {upcomingAppointment.clinician
-                      ? `${upcomingAppointment.clinician.first_name?.startsWith('Dr.') ? '' : 'Dr. '}${upcomingAppointment.clinician.first_name || ''} ${upcomingAppointment.clinician.last_name || ''}`.trim()
-                      : 'Your Doctor'}
+        ) : sortedUpcomingBookings.length > 0 ? (
+          <div className={styles.upcomingAppointmentsList}>
+            {sortedUpcomingBookings.map((appointment) => (
+              <div key={appointment.id} className={styles.upcomingCard}>
+                <div className={styles.upcomingHeader}>
+                  <CalendarPlusIcon size={32} />
+                  <span className={styles.upcomingDateTime}>
+                    {formatDate(appointment.slot?.startTime || appointment.startTime || '')} | {formatTime(appointment.slot?.startTime || appointment.startTime || '')}
                   </span>
-                  <div className={styles.departmentRow}>
-                    <span className={styles.statusDot}></span>
-                    <span className={styles.department}>
-                      {upcomingAppointment.reasonForVisit || 'General Consultation'}
-                    </span>
+                </div>
+
+                <div className={styles.doctorCard}>
+                  <div className={styles.doctorInfo}>
+                    <img
+                      src={avatar}
+                      alt={`Dr. ${appointment.clinician?.first_name}`}
+                      className={styles.doctorAvatar}
+                    />
+                    <div className={styles.doctorDetails}>
+                      <span className={styles.doctorName}>
+                        {appointment.clinician
+                          ? `${appointment.clinician.first_name?.startsWith('Dr.') ? '' : 'Dr. '}${appointment.clinician.first_name || ''} ${appointment.clinician.last_name || ''}`.trim()
+                          : 'Your Doctor'}
+                      </span>
+                      <div className={styles.departmentRow}>
+                        <span className={styles.statusDot}></span>
+                        <span className={styles.department}>
+                          {appointment.reasonForVisit || 'General Consultation'}
+                        </span>
+                      </div>
+                    </div>
                   </div>
+                  <span className={`${styles.statusBadge} ${appointment.status === 'Pending' ? styles.statusPending : ''}`}>
+                    {appointment.status}
+                  </span>
+                </div>
+
+                <div className={styles.appointmentActions}>
+                  <Button
+                    variant="outline"
+                    size="small"
+                    onClick={() => handleReschedule(appointment)}
+                  >
+                    Reschedule
+                  </Button>
+                  <button
+                    className={styles.cancelBtn}
+                    onClick={() => handleCancelBooking(appointment.id)}
+                  >
+                    Cancel
+                  </button>
                 </div>
               </div>
-              <span className={styles.statusBadge}>{upcomingAppointment.status}</span>
-            </div>
-
-            <div className={styles.appointmentActions}>
-              <Button
-                variant="outline"
-                size="small"
-                onClick={() => handleReschedule(upcomingAppointment)}
-              >
-                Reschedule
-              </Button>
-              <button
-                className={styles.cancelBtn}
-                onClick={() => handleCancelBooking(upcomingAppointment.id)}
-              >
-                Cancel
-              </button>
-            </div>
+            ))}
           </div>
         ) : (
           <div className={styles.upcomingCard}>
@@ -260,7 +271,7 @@ export const Appointments: React.FC = () => {
                   </div>
                   <span className={styles.statusBadge}>{appointment.status}</span>
                 </div>
-                <button className={styles.viewSummaryBtn} onClick={() => navigate('/medical-records')}>View Summary</button>
+                <button className={styles.viewSummaryBtn} onClick={() => navigate('/medical-records', { state: { tab: 'visit-history' } })}>View Summary</button>
               </div>
             ))}
           </div>

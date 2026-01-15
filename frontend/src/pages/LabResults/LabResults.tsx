@@ -378,18 +378,21 @@ export const LabResults: React.FC = () => {
                   <div className={styles.chartPlaceholder}></div>
                 </div>
 
+                {/* Doctor's Notes (if available) */}
                 {expandedResult.notes && (
                   <div className={styles.doctorNotes}>
                     <div className={styles.notesContent}>
                       <NotesIcon />
                       <span><strong>Doctor's Notes:</strong> {expandedResult.notes}</span>
                     </div>
-                    <div className={styles.notesActions}>
-                      <button className={styles.downloadBtn} onClick={() => handleDownloadPDF(expandedResult)}>Download PDF</button>
-                      <button className={styles.askBtn} onClick={() => handleAskQuestion(expandedResult)}>Ask a question</button>
-                    </div>
                   </div>
                 )}
+
+                {/* Action Buttons - Always visible */}
+                <div className={styles.resultActions}>
+                  <button className={styles.downloadBtn} onClick={() => handleDownloadPDF(expandedResult)}>Download PDF</button>
+                  <button className={styles.askBtn} onClick={() => handleAskQuestion(expandedResult)}>Ask a question</button>
+                </div>
               </div>
             </div>
           )}

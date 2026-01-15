@@ -273,6 +273,15 @@
   flex-shrink: 0;
 }
 
+.resultActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border-light);
+}
+
 .downloadBtn {
   padding: 10px 16px;
   background-color: white;

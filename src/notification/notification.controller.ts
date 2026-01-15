@@ -24,7 +24,9 @@ export class NotificationController {
 
   @Get()
   async findAll(@Request() req: any, @Query('limit') limit?: string) {
-    const userId = req.user.sub;
+    const userId = req.user.userId;
+    console.log('[NotificationController] findAll - req.user:', JSON.stringify(req.user));
+    console.log('[NotificationController] findAll - userId:', userId);
     const notifications = await this.notificationService.findAllForUser(
       userId,
       limit ? parseInt(limit, 10) : 20,
@@ -39,35 +41,35 @@ export class NotificationController {
 
   @Get('unread-count')
   async getUnreadCount(@Request() req: any) {
-    const userId = req.user.sub;
+    const userId = req.user.userId;
     const count = await this.notificationService.getUnreadCount(userId);
     return { count };
   }
 
   @Patch(':id/read')
   async markAsRead(@Request() req: any, @Param('id') id: string) {
-    const userId = req.user.sub;
+    const userId = req.user.userId;
     await this.notificationService.markAsRead(id, userId);
     return { success: true };
   }
 
   @Post('read-all')
   async markAllAsRead(@Request() req: any) {
-    const userId = req.user.sub;
+    const userId = req.user.userId;
     await this.notificationService.markAllAsRead(userId);
     return { success: true };
   }
 
   @Delete(':id')
   async delete(@Request() req: any, @Param('id') id: string) {
-    const userId = req.user.sub;
+    const userId = req.user.userId;
     await this.notificationService.delete(id, userId);
     return { success: true };
   }
 
   @Post('request-records')
   async requestRecords(@Request() req: any, @Body() body: { email?: string }) {
-    const userId = req.user.sub;
+    const userId = req.user.userId;
 
     // Get user details
     const user = await this.prisma.users.findUnique({

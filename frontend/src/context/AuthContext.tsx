@@ -101,8 +101,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
       return { success: true };
     } catch (error: any) {
-      const message = error.response?.data?.message || 'Login failed';
-      return { success: false, error: message };
+      const status = error.response?.status;
+      const backendMessage = error.response?.data?.message || '';
+
+      // Map to user-friendly error messages
+      let friendlyMessage = 'Unable to sign in. Please try again.';
+
+      if (status === 401 || backendMessage.toLowerCase().includes('unauthorized') ||
+          backendMessage.toLowerCase().includes('invalid') ||
+          backendMessage.toLowerCase().includes('incorrect')) {
+        friendlyMessage = 'Incorrect email or password. Please check your credentials and try again.';
+      } else if (status === 404 || backendMessage.toLowerCase().includes('not found') ||
+                 backendMessage.toLowerCase().includes('no user')) {
+        friendlyMessage = 'No account found with this email. Please check your email or create a new account.';
+      } else if (status === 429) {
+        friendlyMessage = 'Too many login attempts. Please wait a few minutes and try again.';
+      } else if (status === 500 || status === 502 || status === 503) {
+        friendlyMessage = 'Our servers are temporarily unavailable. Please try again in a few moments.';
+      } else if (!navigator.onLine) {
+        friendlyMessage = 'No internet connection. Please check your network and try again.';
+      }
+
+      return { success: false, error: friendlyMessage };
     }
   };
 

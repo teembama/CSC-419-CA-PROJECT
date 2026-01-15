@@ -64,6 +64,61 @@
   max-width: 381px;
 }
 
+/* Error Banner */
+.errorBanner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.errorIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background-color: #fee2e2;
+  border-radius: 50%;
+  color: #dc2626;
+  flex-shrink: 0;
+}
+
+.errorContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.errorTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #b91c1c;
+}
+
+.errorMessage {
+  font-size: 13px;
+  font-weight: 400;
+  color: #dc2626;
+  line-height: 1.4;
+}
+
 .formFields {
   display: flex;
   flex-direction: column;

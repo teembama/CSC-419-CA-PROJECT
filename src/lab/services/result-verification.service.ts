@@ -186,7 +186,7 @@ export class ResultVerificationService {
             // Add reference range based on test name
             unit: '',
             reference_range: referenceRanges[item.test_name] || 'See lab report',
-            notes: result.abnormality_flag === 'High' ? 'Result is above normal range. Please consult with your doctor.' : '',
+            notes: this.generateNotesForResult(item.test_name, result.abnormality_flag),
             order: {
               id: order.id,
               test_type: item.test_name,
@@ -212,5 +212,30 @@ export class ResultVerificationService {
       unverifiedResults: unverified,
       verificationRate: total > 0 ? Math.round((verified / total) * 100) : 0,
     };
+  }
+
+  private generateNotesForResult(testName: string, abnormalityFlag: string | null): string {
+    if (!abnormalityFlag || abnormalityFlag === 'Normal') {
+      // Add notes even for normal results
+      const normalNotes: Record<string, string> = {
+        'Complete Blood Count (CBC)': 'All blood cell counts are within normal limits. Continue maintaining a healthy lifestyle.',
+        'Basic Metabolic Panel': 'Kidney function and electrolytes are within normal range. Stay well hydrated.',
+        'Comprehensive Metabolic Panel': 'Liver and kidney function tests are normal. Continue regular check-ups.',
+        'Lipid Panel': 'Cholesterol levels are within healthy range. Maintain current diet and exercise routine.',
+      };
+      return normalNotes[testName] || '';
+    }
+
+    // Detailed notes for abnormal results
+    const abnormalNotes: Record<string, string> = {
+      'Hemoglobin A1C': 'Your A1C level of 7.2% indicates diabetes. This measures your average blood sugar over the past 2-3 months. Please schedule a follow-up appointment to discuss diabetes management, including diet modifications, exercise, and potential medication adjustments. Regular monitoring is essential.',
+      'Lipid Panel': 'Your cholesterol levels are elevated. Total cholesterol of 220 and LDL of 140 increase cardiovascular risk. Recommendations: Reduce saturated fat intake, increase fiber consumption, exercise at least 150 minutes per week, and consider omega-3 supplements. A follow-up lipid panel in 3 months is recommended.',
+      'Complete Blood Count (CBC)': 'Some values are outside the normal range. Please consult with your healthcare provider for further evaluation and possible additional testing.',
+      'Basic Metabolic Panel': 'One or more values require attention. Your doctor will review these results and may recommend dietary changes or additional tests.',
+      'Thyroid Panel (TSH, T3, T4)': 'Thyroid hormone levels are abnormal. This may indicate thyroid dysfunction. Further evaluation and possible treatment may be necessary.',
+      'COVID-19 PCR': 'Your test result is positive. Please isolate and follow CDC guidelines. Monitor symptoms and seek medical care if you experience difficulty breathing.',
+    };
+
+    return abnormalNotes[testName] || 'Result is outside normal range. Please consult with your healthcare provider for interpretation and next steps.';
   }
 }

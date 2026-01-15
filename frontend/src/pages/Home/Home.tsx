@@ -257,8 +257,16 @@ export const Home: React.FC = () => {
     navigate('/appointments/book');
   };
 
-  // Get next upcoming appointment
-  const upcomingAppointment = appointments.find(a => a.status === 'Pending' || a.status === 'Confirmed');
+  // Get next upcoming appointment (future dates only, sorted by nearest)
+  const now = new Date();
+  const upcomingAppointment = appointments
+    .filter(a =>
+      (a.status === 'Pending' || a.status === 'Confirmed') &&
+      a.slot?.startTime &&
+      new Date(a.slot.startTime) >= now
+    )
+    .sort((a, b) => new Date(a.slot?.startTime).getTime() - new Date(b.slot?.startTime).getTime())
+    [0];
 
   // Calculate outstanding balance
   const outstandingBalance = invoices
