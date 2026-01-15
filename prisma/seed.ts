@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
@@ -36,6 +36,114 @@ async function main() {
   const clinicianRole = roles.find(r => r.name === 'Clinician')!;
   const adminRole = roles.find(r => r.name === 'Admin')!;
   const labTechnicianRole = roles.find(r => r.name === 'LabTechnician')!;
+
+  // Create permissions
+  console.log('Creating permissions...');
+  const permissionsData = [
+    // Dashboard
+    { name: 'view_dashboard', description: 'Access to view the dashboard', category: 'dashboard' },
+    { name: 'view_analytics', description: 'Access to view analytics and reports', category: 'dashboard' },
+    // User Management
+    { name: 'view_users', description: 'View user list and details', category: 'users' },
+    { name: 'manage_users', description: 'Create, edit, and manage user accounts', category: 'users' },
+    { name: 'deactivate_users', description: 'Activate or deactivate user accounts', category: 'users' },
+    { name: 'assign_roles', description: 'Assign roles to users', category: 'users' },
+    // Appointments
+    { name: 'view_appointments', description: 'View appointment schedules', category: 'appointments' },
+    { name: 'create_appointments', description: 'Create new appointments', category: 'appointments' },
+    { name: 'edit_appointments', description: 'Modify existing appointments', category: 'appointments' },
+    { name: 'cancel_appointments', description: 'Cancel appointments', category: 'appointments' },
+    { name: 'manage_slots', description: 'Create and manage appointment slots', category: 'appointments' },
+    // Patient Records
+    { name: 'view_patient_records', description: 'View patient medical records', category: 'patients' },
+    { name: 'edit_patient_records', description: 'Edit patient medical records', category: 'patients' },
+    { name: 'view_own_records', description: 'View own medical records (patients)', category: 'patients' },
+    { name: 'create_encounters', description: 'Create new patient encounters', category: 'patients' },
+    { name: 'add_soap_notes', description: 'Add SOAP notes to encounters', category: 'patients' },
+    { name: 'prescribe_medications', description: 'Create prescriptions for patients', category: 'patients' },
+    // Lab
+    { name: 'view_lab_orders', description: 'View lab orders', category: 'lab' },
+    { name: 'create_lab_orders', description: 'Create new lab orders', category: 'lab' },
+    { name: 'process_lab_results', description: 'Enter and process lab results', category: 'lab' },
+    { name: 'verify_lab_results', description: 'Verify and approve lab results', category: 'lab' },
+    { name: 'view_own_lab_results', description: 'View own lab results (patients)', category: 'lab' },
+    // Billing
+    { name: 'view_invoices', description: 'View billing invoices', category: 'billing' },
+    { name: 'create_invoices', description: 'Create new invoices', category: 'billing' },
+    { name: 'edit_invoices', description: 'Edit existing invoices', category: 'billing' },
+    { name: 'process_payments', description: 'Process invoice payments', category: 'billing' },
+    { name: 'view_own_invoices', description: 'View own invoices (patients)', category: 'billing' },
+    // System
+    { name: 'view_audit_logs', description: 'View system audit logs', category: 'system' },
+    { name: 'manage_roles', description: 'Create and edit roles', category: 'system' },
+    { name: 'manage_permissions', description: 'Assign permissions to roles', category: 'system' },
+    { name: 'system_settings', description: 'Access system configuration settings', category: 'system' },
+  ];
+
+  const createdPermissions: { id: string; name: string }[] = [];
+  for (const perm of permissionsData) {
+    const permission = await prisma.permissions.upsert({
+      where: { name: perm.name },
+      update: { description: perm.description, category: perm.category },
+      create: perm,
+    });
+    createdPermissions.push({ id: permission.id, name: permission.name });
+  }
+  console.log('✅ Permissions created\n');
+
+  // Assign permissions to roles
+  console.log('Assigning permissions to roles...');
+
+  // Helper to get permission IDs by names
+  const getPermIds = (names: string[]) =>
+    createdPermissions.filter(p => names.includes(p.name)).map(p => p.id);
+
+  // Admin gets ALL permissions
+  const adminPermIds = createdPermissions.map(p => p.id);
+
+  // Clinician permissions
+  const clinicianPermNames = [
+    'view_dashboard', 'view_analytics',
+    'view_appointments', 'create_appointments', 'edit_appointments', 'cancel_appointments', 'manage_slots',
+    'view_patient_records', 'edit_patient_records', 'create_encounters', 'add_soap_notes', 'prescribe_medications',
+    'view_lab_orders', 'create_lab_orders', 'verify_lab_results',
+    'view_invoices', 'create_invoices',
+  ];
+  const clinicianPermIds = getPermIds(clinicianPermNames);
+
+  // Patient permissions (limited to own data)
+  const patientPermNames = [
+    'view_dashboard',
+    'view_appointments', 'create_appointments', 'cancel_appointments',
+    'view_own_records',
+    'view_own_lab_results',
+    'view_own_invoices',
+  ];
+  const patientPermIds = getPermIds(patientPermNames);
+
+  // Lab Technician permissions
+  const labTechPermNames = [
+    'view_dashboard',
+    'view_lab_orders', 'process_lab_results',
+    'view_patient_records',
+  ];
+  const labTechPermIds = getPermIds(labTechPermNames);
+
+  // Clear existing role_permissions and insert new ones
+  await prisma.role_permissions.deleteMany({});
+
+  const rolePermData = [
+    ...adminPermIds.map(pid => ({ role_id: adminRole.id, permission_id: pid })),
+    ...clinicianPermIds.map(pid => ({ role_id: clinicianRole.id, permission_id: pid })),
+    ...patientPermIds.map(pid => ({ role_id: patientRole.id, permission_id: pid })),
+    ...labTechPermIds.map(pid => ({ role_id: labTechnicianRole.id, permission_id: pid })),
+  ];
+
+  await prisma.role_permissions.createMany({
+    data: rolePermData,
+    skipDuplicates: true,
+  });
+  console.log('✅ Role permissions assigned\n');
 
   // Hash password
   const passwordHash = await bcrypt.hash('password123', 10);
@@ -607,6 +715,141 @@ async function main() {
     ],
   });
   console.log('✅ Line items created\n');
+
+  // Create audit logs
+  console.log('Creating audit logs...');
+  const now = new Date();
+  await prisma.system_audit_logs.createMany({
+    data: [
+      {
+        table_name: 'users',
+        record_id: patient.id,
+        action: 'INSERT',
+        old_data: Prisma.JsonNull,
+        new_data: { email: 'patient@citycare.com', first_name: 'Demo', last_name: 'Patient', role: 'Patient' },
+        changed_by: admin.id,
+        changed_at: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
+      },
+      {
+        table_name: 'users',
+        record_id: clinician.id,
+        action: 'INSERT',
+        old_data: Prisma.JsonNull,
+        new_data: { email: 'clinician@citycare.com', first_name: 'Dr. Sarah', last_name: 'Johnson', role: 'Clinician' },
+        changed_by: admin.id,
+        changed_at: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
+      },
+      {
+        table_name: 'users',
+        record_id: patient2.id,
+        action: 'UPDATE',
+        old_data: { is_active: false },
+        new_data: { is_active: true },
+        changed_by: admin.id,
+        changed_at: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
+      },
+      {
+        table_name: 'appt_bookings',
+        record_id: patient.id, // Using patient ID as placeholder
+        action: 'INSERT',
+        old_data: Prisma.JsonNull,
+        new_data: { patient: 'Demo Patient', clinician: 'Dr. Sarah Johnson', status: 'Confirmed' },
+        changed_by: patient.id,
+        changed_at: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000), // 4 days ago
+      },
+      {
+        table_name: 'lab_orders',
+        record_id: labOrder1.id,
+        action: 'INSERT',
+        old_data: Prisma.JsonNull,
+        new_data: { priority: 'Routine', status: 'Ordered', tests: ['CBC', 'BMP'] },
+        changed_by: clinician.id,
+        changed_at: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+      },
+      {
+        table_name: 'lab_orders',
+        record_id: labOrder1.id,
+        action: 'UPDATE',
+        old_data: { status: 'Ordered' },
+        new_data: { status: 'Completed' },
+        changed_by: labTechnician.id,
+        changed_at: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+      },
+      {
+        table_name: 'lab_results',
+        record_id: labOrder1.id, // Using lab order ID as placeholder
+        action: 'INSERT',
+        old_data: Prisma.JsonNull,
+        new_data: { test: 'CBC', result: 'Normal', verified: true },
+        changed_by: labTechnician.id,
+        changed_at: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+      },
+      {
+        table_name: 'patient_prescriptions',
+        record_id: encounter1.id, // Using encounter ID as placeholder
+        action: 'INSERT',
+        old_data: Prisma.JsonNull,
+        new_data: { medication: 'Ibuprofen', dosage: '400mg', frequency: 'Every 6 hours' },
+        changed_by: clinician.id,
+        changed_at: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
+      },
+      {
+        table_name: 'users',
+        record_id: labTechnician.id,
+        action: 'UPDATE',
+        old_data: { phone_number: '+1666666666' },
+        new_data: { phone_number: '+1666666667' },
+        changed_by: labTechnician.id,
+        changed_at: new Date(now.getTime() - 12 * 60 * 60 * 1000), // 12 hours ago
+      },
+      {
+        table_name: 'appt_bookings',
+        record_id: patient2.id, // Using patient2 ID as placeholder
+        action: 'UPDATE',
+        old_data: { status: 'Pending' },
+        new_data: { status: 'Confirmed' },
+        changed_by: clinician.id,
+        changed_at: new Date(now.getTime() - 6 * 60 * 60 * 1000), // 6 hours ago
+      },
+      {
+        table_name: 'lab_orders',
+        record_id: labOrder2.id,
+        action: 'UPDATE',
+        old_data: { status: 'Pending' },
+        new_data: { status: 'InProgress' },
+        changed_by: labTechnician.id,
+        changed_at: new Date(now.getTime() - 3 * 60 * 60 * 1000), // 3 hours ago
+      },
+      {
+        table_name: 'billing_invoices',
+        record_id: invoice1.id,
+        action: 'UPDATE',
+        old_data: { status: 'Unpaid' },
+        new_data: { status: 'Paid' },
+        changed_by: admin.id,
+        changed_at: new Date(now.getTime() - 2 * 60 * 60 * 1000), // 2 hours ago
+      },
+      {
+        table_name: 'patient_encounters',
+        record_id: encounter3.id,
+        action: 'INSERT',
+        old_data: Prisma.JsonNull,
+        new_data: { patient: 'Jane Smith', clinician: 'Dr. Sarah Johnson', status: 'Open' },
+        changed_by: clinician.id,
+        changed_at: new Date(now.getTime() - 1 * 60 * 60 * 1000), // 1 hour ago
+      },
+      {
+        table_name: 'users',
+        record_id: admin.id,
+        action: 'UPDATE',
+        old_data: { last_login: 'none' },
+        new_data: { last_login: new Date().toISOString() },
+        changed_by: admin.id,
+        changed_at: new Date(now.getTime() - 30 * 60 * 1000), // 30 minutes ago
+      },
+    ],
+  });
+  console.log('✅ Audit logs created\n');
 
   console.log('========================================');
   console.log('🎉 Seed completed successfully!');

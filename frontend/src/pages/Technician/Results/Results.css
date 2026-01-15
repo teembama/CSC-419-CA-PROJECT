@@ -59,14 +59,68 @@
   color: #DC2626;
 }
 
-/* Responsive */
+/* ================================
+   ENHANCED RESPONSIVE STYLES
+   ================================ */
+
+/* Tablet portrait (768px - 1024px) */
+@media (max-width: 1024px) {
+  .results-header {
+    gap: 16px;
+  }
+
+  .results-export-btn {
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+}
+
+/* Mobile landscape and small tablets (576px - 768px) */
 @media (max-width: 768px) {
   .results-header {
     flex-direction: column;
     align-items: stretch;
+    margin-bottom: 24px;
+    gap: 16px;
   }
 
   .results-export-btn {
     width: 100%;
+    text-align: center;
+    padding: 10px 20px;
+    font-size: 13px;
+  }
+
+  .results-status-badge {
+    padding: 3px 10px;
+    font-size: 11px;
+  }
+
+  .results-review-badge {
+    font-size: 12px;
+  }
+}
+
+/* Mobile portrait (up to 576px) */
+@media (max-width: 576px) {
+  .results-header {
+    margin-bottom: 16px;
+    gap: 12px;
+  }
+
+  .results-export-btn {
+    padding: 8px 16px;
+    font-size: 12px;
+    border-radius: 6px;
+  }
+
+  .results-status-badge {
+    padding: 2px 8px;
+    font-size: 10px;
+    border-radius: 8px;
+  }
+
+  .results-review-badge {
+    font-size: 11px;
   }
 }

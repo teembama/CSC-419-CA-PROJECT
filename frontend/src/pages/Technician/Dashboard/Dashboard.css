@@ -554,7 +554,29 @@
   background-color: #E6F7FF;
 }
 
-/* Responsive */
+/* ================================
+   ENHANCED RESPONSIVE STYLES
+   ================================ */
+
+/* Large screens (1200px+) */
+@media (min-width: 1200px) {
+  .tech-stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Tablet landscape (1024px - 1200px) */
+@media (max-width: 1200px) {
+  .tech-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .tech-header-center {
+    max-width: 400px;
+  }
+}
+
+/* Tablet portrait (768px - 1024px) */
 @media (max-width: 1024px) {
   .tech-sidebar {
     position: fixed;
@@ -562,32 +584,311 @@
     top: 0;
     bottom: 0;
     z-index: 200;
+    transition: left 0.3s ease;
+  }
+
+  .tech-sidebar.open {
+    left: 0;
   }
 
   .tech-sidebar.collapsed {
     left: 0;
   }
+
+  .tech-main-content {
+    padding: 24px;
+  }
+
+  .tech-page-title {
+    font-size: 28px;
+  }
+
+  .tech-header-center {
+    max-width: 350px;
+  }
+
+  .tech-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .tech-search-box {
+    width: 100%;
+    max-width: 300px;
+  }
 }
 
+/* Mobile landscape and small tablets (576px - 768px) */
 @media (max-width: 768px) {
   .tech-header {
     padding: 12px 16px;
+    gap: 16px;
+  }
+
+  .tech-header-center {
+    display: none;
   }
 
   .tech-main-content {
     padding: 16px;
   }
 
+  .tech-content-header {
+    margin-bottom: 24px;
+  }
+
+  .tech-page-title {
+    font-size: 24px;
+  }
+
+  .tech-page-subtitle {
+    font-size: 14px;
+  }
+
   .tech-stats-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .tech-stat-card {
+    padding: 16px;
+  }
+
+  .tech-stat-value {
+    font-size: 28px;
   }
 
   .tech-alert-banner {
     flex-direction: column;
     align-items: flex-start;
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .tech-alert-content {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .tech-alert-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+  }
+
+  .tech-alert-btn {
+    width: 100%;
+    text-align: center;
   }
 
   .tech-search-box {
     width: 100%;
+  }
+
+  .tech-orders-section {
+    padding: 16px;
+  }
+
+  .tech-table th,
+  .tech-table td {
+    padding: 12px 8px;
+    font-size: 13px;
+  }
+
+  .tech-user-info {
+    display: none;
+  }
+
+  .tech-sidebar {
+    width: 100%;
+    left: -100%;
+  }
+
+  .tech-sidebar.open {
+    left: 0;
+  }
+}
+
+/* Mobile portrait (up to 576px) */
+@media (max-width: 576px) {
+  .tech-header {
+    padding: 10px 12px;
+    gap: 12px;
+  }
+
+  .tech-logo-text {
+    display: none;
+  }
+
+  .tech-logo-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .tech-user-avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .tech-notification-btn {
+    padding: 6px;
+  }
+
+  .tech-bell-icon {
+    font-size: 20px;
+  }
+
+  .tech-main-content {
+    padding: 12px;
+  }
+
+  .tech-content-header {
+    margin-bottom: 16px;
+  }
+
+  .tech-page-title {
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+
+  .tech-page-subtitle {
+    font-size: 13px;
+  }
+
+  .tech-stats-grid {
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .tech-stat-card {
+    padding: 14px;
+    border-radius: 10px;
+  }
+
+  .tech-stat-header {
+    margin-bottom: 12px;
+  }
+
+  .tech-stat-title {
+    font-size: 12px;
+  }
+
+  .tech-stat-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+
+  .tech-stat-value {
+    font-size: 24px;
+  }
+
+  .tech-alert-banner {
+    padding: 14px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+  }
+
+  .tech-alert-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+
+  .tech-alert-title {
+    font-size: 16px;
+  }
+
+  .tech-alert-description {
+    font-size: 13px;
+  }
+
+  .tech-alert-btn {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  .tech-orders-section {
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  .tech-section-title {
+    font-size: 16px;
+  }
+
+  .tech-table-container {
+    margin: 0 -12px;
+    padding: 0 12px;
+  }
+
+  .tech-table th {
+    padding: 10px 6px;
+    font-size: 11px;
+  }
+
+  .tech-table td {
+    padding: 10px 6px;
+    font-size: 12px;
+  }
+
+  .tech-priority-badge {
+    padding: 3px 8px;
+    font-size: 10px;
+  }
+
+  .tech-action-btn {
+    font-size: 12px;
+    padding: 4px 6px;
+  }
+
+  .tech-view-more-btn {
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+
+  /* Hide some columns on very small screens */
+  .tech-table th:nth-child(4),
+  .tech-table td:nth-child(4) {
+    display: none;
+  }
+}
+
+/* Mobile menu toggle button - add this to show a hamburger menu */
+.tech-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.tech-menu-toggle:hover {
+  background-color: #F3F4F6;
+}
+
+@media (max-width: 1024px) {
+  .tech-menu-toggle {
+    display: block;
+  }
+}
+
+/* Sidebar overlay for mobile */
+.tech-sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 199;
+}
+
+@media (max-width: 1024px) {
+  .tech-sidebar-overlay.visible {
+    display: block;
   }
 }

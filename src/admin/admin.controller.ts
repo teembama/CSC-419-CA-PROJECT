@@ -2,10 +2,12 @@ import {
   Controller,
   Get,
   Patch,
+  Put,
   Param,
   Body,
   Query,
   UseGuards,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../iam/guards/jwt-auth.guard';
@@ -92,6 +94,40 @@ export class AdminController {
   @Get('roles')
   async getRoles() {
     return this.adminService.getRoles();
+  }
+
+  // ============================================
+  // PERMISSIONS MANAGEMENT
+  // ============================================
+
+  /**
+   * GET /admin/permissions
+   * Get all available permissions
+   */
+  @Get('permissions')
+  async getAllPermissions() {
+    return this.adminService.getAllPermissions();
+  }
+
+  /**
+   * GET /admin/roles/:roleId/permissions
+   * Get permissions for a specific role
+   */
+  @Get('roles/:roleId/permissions')
+  async getRolePermissions(@Param('roleId', ParseIntPipe) roleId: number) {
+    return this.adminService.getRolePermissions(roleId);
+  }
+
+  /**
+   * PUT /admin/roles/:roleId/permissions
+   * Update permissions for a specific role
+   */
+  @Put('roles/:roleId/permissions')
+  async updateRolePermissions(
+    @Param('roleId', ParseIntPipe) roleId: number,
+    @Body() body: { permissionIds: string[] },
+  ) {
+    return this.adminService.updateRolePermissions(roleId, body.permissionIds);
   }
 
   // ============================================

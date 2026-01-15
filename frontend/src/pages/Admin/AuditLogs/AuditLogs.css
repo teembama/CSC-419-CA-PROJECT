@@ -714,3 +714,293 @@ body {
 .dashboard-header {
   border-bottom: 1px solid #e5e7eb;
 }
+
+/* ================================
+   ENHANCED RESPONSIVE STYLES
+   ================================ */
+
+/* Tablet portrait (768px - 1024px) */
+@media (max-width: 1024px) {
+  .dashboard-header {
+    padding: 0 20px;
+  }
+
+  .sidebar {
+    width: 280px;
+    flex: 0 0 280px;
+  }
+
+  .sidebar-box {
+    min-height: calc(100vh - 140px);
+    padding: 20px 18px;
+  }
+
+  .main-content {
+    padding: 24px;
+  }
+
+  .al-header-text h1 {
+    font-size: 26px;
+  }
+
+  .al-filters {
+    flex-wrap: wrap;
+  }
+
+  .al-table-head,
+  .al-table-row {
+    grid-template-columns: 1.2fr 1fr 1.2fr 1.4fr;
+  }
+}
+
+/* Mobile landscape and small tablets (576px - 768px) */
+@media (max-width: 768px) {
+  .dashboard-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    flex: 0 0 auto;
+    padding: 16px;
+  }
+
+  .sidebar-box {
+    min-height: auto;
+    max-height: none;
+    padding: 16px;
+  }
+
+  .nav-section {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .nav-item {
+    padding: 10px 14px;
+    flex: 0 0 auto;
+  }
+
+  .section-label {
+    width: 100%;
+    margin: 8px 0;
+  }
+
+  .logout {
+    margin-top: 16px;
+  }
+
+  .main-content {
+    padding: 16px;
+  }
+
+  .al-page-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .export-logs-btn {
+    width: 100%;
+  }
+
+  .al-filters {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .filter-group {
+    width: 100%;
+  }
+
+  .filter-select {
+    width: 100%;
+  }
+
+  .reset-filters-btn {
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .search-bar {
+    min-width: 180px;
+    flex: 1;
+    max-width: 300px;
+  }
+
+  .header-profile .profile-info {
+    display: none;
+  }
+
+  .al-table-header {
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .al-table-header h2 {
+    position: static;
+  }
+
+  .al-search {
+    min-width: 100%;
+  }
+
+  .al-table-head,
+  .al-table-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 16px;
+  }
+
+  .al-th {
+    display: none;
+  }
+
+  .al-td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+  }
+
+  .al-td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #6b7280;
+    font-size: 12px;
+    margin-right: 8px;
+  }
+
+  .al-td.resource-col {
+    text-align: left;
+  }
+
+  .resource-text {
+    text-align: left;
+  }
+
+  .al-table-footer {
+    padding: 12px 16px;
+    justify-content: center;
+  }
+}
+
+/* Mobile portrait (up to 576px) */
+@media (max-width: 576px) {
+  .dashboard-header {
+    padding: 0 12px;
+    height: 60px;
+  }
+
+  .logo-text {
+    display: none;
+  }
+
+  .logo-image {
+    width: 32px;
+    height: 32px;
+  }
+
+  .search-bar {
+    min-width: 120px;
+    padding: 8px 12px;
+  }
+
+  .search-bar input {
+    font-size: 13px;
+  }
+
+  .header-right {
+    gap: 8px;
+  }
+
+  .notification-btn {
+    padding: 6px;
+  }
+
+  .header-profile img {
+    width: 32px;
+    height: 32px;
+  }
+
+  .sidebar {
+    padding: 12px;
+  }
+
+  .sidebar-box {
+    padding: 12px;
+  }
+
+  .nav-item {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .nav-item span {
+    display: none;
+  }
+
+  .logout span {
+    display: none;
+  }
+
+  .main-content {
+    padding: 12px;
+  }
+
+  .al-header-text h1 {
+    font-size: 20px;
+  }
+
+  .al-header-text p {
+    font-size: 13px;
+  }
+
+  .filter-label {
+    font-size: 12px;
+  }
+
+  .filter-select {
+    padding: 8px 30px 8px 12px;
+    font-size: 13px;
+  }
+
+  .reset-filters-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .al-table-container {
+    border-radius: 12px;
+  }
+
+  .al-table-row {
+    padding: 12px;
+  }
+
+  .timestamp-text {
+    font-size: 13px;
+  }
+
+  .user-text {
+    font-size: 13px;
+  }
+
+  .action-badge {
+    font-size: 12px;
+  }
+
+  .resource-text {
+    font-size: 12px;
+  }
+
+  .view-more-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}

@@ -1006,4 +1006,369 @@ body {
   border-bottom: 1px solid #e5e7eb;
 }
 
+/* ================================
+   ENHANCED RESPONSIVE STYLES
+   ================================ */
+
+/* Tablet landscape (1024px - 1200px) */
+@media (max-width: 1200px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .verification-section {
+    height: auto !important;
+    min-height: 200px;
+  }
+
+  .activity-section {
+    height: auto;
+    min-height: 300px;
+  }
+}
+
+/* Tablet portrait (768px - 1024px) */
+@media (max-width: 1024px) {
+  .dashboard-header {
+    padding: 0 20px;
+  }
+
+  .sidebar {
+    width: 280px;
+    flex: 0 0 280px;
+  }
+
+  .sidebar-box {
+    min-height: calc(100vh - 140px);
+    padding: 20px 18px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .main-content {
+    padding: 20px;
+  }
+
+  .page-header h1 {
+    font-size: 26px;
+  }
+}
+
+/* Mobile landscape and small tablets (576px - 768px) */
+@media (max-width: 768px) {
+  .dashboard-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    flex: 0 0 auto;
+    padding: 16px;
+    order: -1;
+  }
+
+  .sidebar-box {
+    min-height: auto;
+    max-height: none;
+    padding: 16px;
+  }
+
+  .nav-section {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .nav-item {
+    padding: 10px 14px;
+    flex: 0 0 auto;
+  }
+
+  .section-label {
+    width: 100%;
+    margin: 8px 0;
+  }
+
+  .logout {
+    margin-top: 16px;
+  }
+
+  .main-content {
+    padding: 16px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .stat-card {
+    height: auto !important;
+    padding: 16px !important;
+  }
+
+  .search-bar {
+    min-width: 180px;
+    flex: 1;
+    max-width: 300px;
+  }
+
+  .header-profile .profile-info {
+    display: none;
+  }
+
+  .page-header h1 {
+    font-size: 24px;
+  }
+
+  .page-header p {
+    font-size: 14px;
+  }
+
+  .activity-section {
+    height: auto;
+  }
+
+  .section-header {
+    padding: 16px 18px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .activity-item {
+    padding: 14px 18px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .activity-time {
+    align-self: flex-end;
+  }
+
+  .verification-section {
+    padding: 14px !important;
+    height: auto !important;
+  }
+
+  .verify-row {
+    padding: 10px 0 !important;
+  }
+
+  .primary-btn {
+    padding: 10px;
+    font-size: 13px;
+  }
+}
+
+/* Mobile portrait (up to 576px) */
+@media (max-width: 576px) {
+  .dashboard-header {
+    padding: 0 12px;
+    height: 60px;
+  }
+
+  .logo-text {
+    display: none;
+  }
+
+  .logo-image {
+    width: 32px;
+    height: 32px;
+  }
+
+  .search-bar {
+    min-width: 120px;
+    padding: 8px 12px;
+  }
+
+  .search-bar input {
+    font-size: 13px;
+  }
+
+  .header-right {
+    gap: 8px;
+  }
+
+  .notification-btn {
+    padding: 6px;
+  }
+
+  .header-profile img {
+    width: 32px;
+    height: 32px;
+  }
+
+  .sidebar {
+    padding: 12px;
+  }
+
+  .sidebar-box {
+    padding: 12px;
+  }
+
+  .sidebar-header-panel {
+    padding: 10px 14px;
+  }
+
+  .nav-item {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .nav-item span {
+    display: none;
+  }
+
+  .nav-item .nav-icon {
+    margin: 0;
+  }
+
+  .logout span {
+    display: none;
+  }
+
+  .main-content {
+    padding: 12px;
+  }
+
+  .page-header {
+    margin-bottom: 16px;
+  }
+
+  .page-header h1 {
+    font-size: 20px;
+  }
+
+  .page-header p {
+    font-size: 13px;
+  }
+
+  .stat-card {
+    padding: 12px !important;
+  }
+
+  .stat-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .stat-body h2 {
+    font-size: 22px;
+  }
+
+  .activity-content strong {
+    font-size: 14px !important;
+  }
+
+  .activity-content p {
+    font-size: 13px !important;
+  }
+
+  .verify-info strong {
+    font-size: 13px !important;
+  }
+
+  .verify-info small {
+    font-size: 11px !important;
+  }
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+
+  .verify-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
+
+/* ================================
+   FIX: PENDING VERIFICATIONS CARD
+   ================================ */
+
+/* Fix the stat-change badge overflow */
+.stat-change {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 90px !important;
+  font-size: 10px !important;
+  padding: 3px 8px !important;
+}
+
+/* Make stat header handle overflow better */
+.stat-header {
+  width: 100% !important;
+  overflow: hidden !important;
+}
+
+/* Ensure stat card contents don't overflow */
+.stat-card {
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Fix stat card layout for Pending Verifications */
+.stats-grid .stat-card:nth-child(4) .stat-header {
+  flex-wrap: nowrap !important;
+  gap: 6px !important;
+}
+
+.stats-grid .stat-card:nth-child(4) .stat-change {
+  flex-shrink: 0 !important;
+}
+
+/* ================================
+   FIX: VERIFICATION QUEUE OVERFLOW
+   ================================ */
+
+/* Container should have fixed height with scroll */
+.verification-section {
+  height: auto !important;
+  max-height: 380px !important;
+  min-height: 280px !important;
+  overflow: hidden !important;
+}
+
+/* Verification list should scroll */
+.verification-list {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  max-height: 220px !important;
+  margin-bottom: 12px !important;
+  padding-right: 4px !important;
+}
+
+/* Custom scrollbar for verification list */
+.verification-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.verification-list::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.verification-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.verification-list::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Make sure the View Full Queue button stays at bottom */
+.verification-section .primary-btn {
+  flex-shrink: 0 !important;
+  margin-top: auto !important;
+}
 

@@ -2,6 +2,7 @@
 export { SignUp } from './SignUp/SignUp';
 export { SignIn } from './SignIn/SignIn';
 export { ForgotPassword } from './ForgotPassword/ForgotPassword';
+export { ResetPassword } from './ResetPassword/ResetPassword';
 
 // Dashboard Pages (Patient)
 export { Home } from './Home/Home';

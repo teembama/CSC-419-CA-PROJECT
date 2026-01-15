@@ -1,74 +1,250 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../context';
+import { adminAPI } from '../../../services/api';
+import { formatDateTime } from '../../../utils/dateUtils';
+import NotificationDropdown from '../../../components/Notifications/NotificationDropdown';
+import GlobalSearch from '../../../components/Search/GlobalSearch';
 import './AuditLogs.css';
 
 interface AuditLog {
-  id: number;
+  id: string;
   timestamp: string;
   user: string;
   action: string;
   affectedResource: string;
-  actionType: 'Record Edit' | 'Failed Login' | 'Vitals Entry';
+  actionType: string;
 }
 
 const AuditLogs: React.FC = () => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [userRole, setUserRole] = useState('all');
   const [actionType, setActionType] = useState('all');
-  const [dateRange, setDateRange] = useState('Oct 24 - Oct 31, 2025');
   const [searchQuery, setSearchQuery] = useState('');
+  const [logs, setLogs] = useState<AuditLog[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
-  const allLogs: AuditLog[] = [
-    {
-      id: 1,
-      timestamp: '2025-10-31 14:22:45',
-      user: 'Dr Sarah Jenkins',
-      action: 'Record Edit',
-      affectedResource: 'Patient Record #PT-9921',
-      actionType: 'Record Edit',
-    },
-    {
-      id: 2,
-      timestamp: '2025-10-31 14:22:45',
-      user: 'Mark Thompson',
-      action: 'Failed Login',
-      affectedResource: 'System Gateway',
-      actionType: 'Failed Login',
-    },
-    {
-      id: 3,
-      timestamp: '2025-10-31 14:22:45',
-      user: 'Alice Wong',
-      action: 'Vitals Entry',
-      affectedResource: 'Patient Record #PT-4410',
-      actionType: 'Vitals Entry',
-    },
-    {
-      id: 4,
-      timestamp: '2025-10-31 14:22:45',
-      user: 'Dr Sarah Jenkins',
-      action: 'Record Edit',
-      affectedResource: 'Patient Record #PT-9921',
-      actionType: 'Record Edit',
-    },
-  ];
+  // Get user display name from AuthContext
+  const userFullName = `${user?.first_name || user?.firstName || ''} ${user?.last_name || user?.lastName || ''}`.trim() || 'Admin User';
 
-  const filteredLogs = allLogs.filter((log) => {
-    const matchesSearch = 
+  const handleLogout = async () => {
+    await logout();
+    navigate('/admin/signin');
+  };
+
+  // Helper function to convert technical action to readable text
+  const formatAction = (action: string, tableName: string, newData: any): string => {
+    const tableActions: Record<string, Record<string, string>> = {
+      auth: {
+        LOGIN: 'User logged in',
+        LOGOUT: 'User logged out',
+      },
+      users: {
+        INSERT: 'Created new user account',
+        UPDATE: 'Updated user profile',
+        DELETE: 'Deleted user account',
+      },
+      appt_bookings: {
+        INSERT: 'Booked new appointment',
+        UPDATE: 'Updated appointment status',
+        DELETE: 'Cancelled appointment',
+      },
+      appt_slots: {
+        INSERT: 'Created appointment slot',
+        UPDATE: 'Updated appointment slot',
+        DELETE: 'Removed appointment slot',
+      },
+      lab_orders: {
+        INSERT: 'Created lab order',
+        UPDATE: 'Updated lab order status',
+        DELETE: 'Cancelled lab order',
+      },
+      lab_results: {
+        INSERT: 'Submitted lab results',
+        UPDATE: 'Updated lab results',
+        DELETE: 'Removed lab results',
+      },
+      lab_test_items: {
+        INSERT: 'Added lab test',
+        UPDATE: 'Updated lab test',
+        DELETE: 'Removed lab test',
+      },
+      patient_prescriptions: {
+        INSERT: 'Issued prescription',
+        UPDATE: 'Updated prescription',
+        DELETE: 'Cancelled prescription',
+      },
+      patient_encounters: {
+        INSERT: 'Started patient encounter',
+        UPDATE: 'Updated encounter notes',
+        DELETE: 'Closed encounter',
+      },
+      patient_charts: {
+        INSERT: 'Created patient chart',
+        UPDATE: 'Updated patient chart',
+        DELETE: 'Removed patient chart',
+      },
+      patient_notes_soap: {
+        INSERT: 'Added clinical notes',
+        UPDATE: 'Updated clinical notes',
+        DELETE: 'Removed clinical notes',
+      },
+      billing_invoices: {
+        INSERT: 'Generated invoice',
+        UPDATE: 'Updated payment status',
+        DELETE: 'Voided invoice',
+      },
+      billing_line_items: {
+        INSERT: 'Added billing item',
+        UPDATE: 'Updated billing item',
+        DELETE: 'Removed billing item',
+      },
+    };
+
+    const defaultActions: Record<string, string> = {
+      INSERT: 'Created record',
+      UPDATE: 'Updated record',
+      DELETE: 'Deleted record',
+    };
+
+    // Try to get specific action text, fallback to default
+    const tableSpecific = tableActions[tableName]?.[action];
+    if (tableSpecific) return tableSpecific;
+
+    return defaultActions[action] || action;
+  };
+
+  // Helper function to convert table name to readable resource
+  const formatResource = (tableName: string, newData: any): string => {
+    const resourceNames: Record<string, string> = {
+      auth: 'Authentication',
+      users: 'User Account',
+      appt_bookings: 'Appointment',
+      appt_slots: 'Appointment Slot',
+      lab_orders: 'Lab Order',
+      lab_results: 'Lab Results',
+      lab_test_items: 'Lab Test',
+      patient_prescriptions: 'Prescription',
+      patient_encounters: 'Patient Encounter',
+      patient_charts: 'Patient Chart',
+      patient_allergies: 'Patient Allergy',
+      patient_notes_soap: 'Clinical Notes',
+      billing_invoices: 'Invoice',
+      billing_line_items: 'Billing Item',
+      roles: 'User Role',
+    };
+
+    const baseName = resourceNames[tableName] || tableName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+    // Special handling for auth events - show role and email
+    if (tableName === 'auth' && newData) {
+      const role = newData.role || 'User';
+      const email = newData.email || '';
+      return `${role} Session (${email})`;
+    }
+
+    // Add context from newData if available
+    if (newData) {
+      if (newData.email) return `${baseName} (${newData.email})`;
+      if (newData.first_name && newData.last_name) return `${baseName} (${newData.first_name} ${newData.last_name})`;
+      if (newData.patient) return `${baseName} - ${newData.patient}`;
+      if (newData.medication) return `${baseName} - ${newData.medication}`;
+      if (newData.test) return `${baseName} - ${newData.test}`;
+      if (newData.status) return `${baseName} → ${newData.status}`;
+    }
+
+    return baseName;
+  };
+
+  const fetchLogs = async () => {
+    try {
+      setLoading(true);
+      const data = await adminAPI.getAuditLogs();
+      const logsArray = Array.isArray(data) ? data : (data?.data || []);
+
+      const transformedLogs = logsArray.map((log: any) => {
+        // Get user name from the nested users object
+        const userName = log.users
+          ? `${log.users.first_name || ''} ${log.users.last_name || ''}`.trim()
+          : (log.changed_by ? `User ${String(log.changed_by).slice(0, 8)}...` : 'System');
+
+        // Format action and resource to be human-readable
+        const readableAction = formatAction(log.action, log.table_name, log.new_data);
+        const readableResource = formatResource(log.table_name, log.new_data);
+
+        return {
+          id: log.id ? String(log.id) : `log-${Math.random()}`,
+          timestamp: formatDateTime(log.changed_at || log.created_at || new Date().toISOString()),
+          user: userName || 'System',
+          action: readableAction,
+          affectedResource: readableResource,
+          actionType: log.action || 'System',
+        };
+      });
+
+      setLogs(transformedLogs);
+    } catch (error) {
+      console.error('Error fetching audit logs:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLogs();
+  }, []);
+
+  const filteredLogs = logs.filter((log) => {
+    const matchesSearch =
       log.action.toLowerCase().includes(searchQuery.toLowerCase()) ||
       log.user.toLowerCase().includes(searchQuery.toLowerCase()) ||
       log.affectedResource.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     const matchesAction = actionType === 'all' || log.actionType === actionType;
-    
+
     return matchesSearch && matchesAction;
   });
+
+  // Get unique action types for filter dropdown
+  const actionTypes = ['all', ...new Set(logs.map(l => l.actionType))];
+
+  // Pagination
+  const totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
+  const paginatedLogs = filteredLogs.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const resetFilters = () => {
     setUserRole('all');
     setActionType('all');
-    setDateRange('Oct 24 - Oct 31, 2025');
     setSearchQuery('');
+    setCurrentPage(1);
+  };
+
+  const exportLogs = () => {
+    const headers = ['Timestamp', 'User', 'Action', 'Affected Resource'];
+    const csvRows = [headers.join(',')];
+
+    filteredLogs.forEach(log => {
+      const row = [
+        `"${log.timestamp}"`,
+        `"${log.user}"`,
+        `"${log.action}"`,
+        `"${log.affectedResource}"`,
+      ];
+      csvRows.push(row.join(','));
+    });
+
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `audit_logs_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
   };
 
   return (
@@ -84,33 +260,15 @@ const AuditLogs: React.FC = () => {
           <span className="logo-text logo-gradient">CityCare</span>
         </div>
 
-        <div className="search-bar">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <circle cx="9" cy="9" r="6" stroke="#9ca3af" strokeWidth="2" />
-            <path
-              d="M13.5 13.5L17 17"
-              stroke="#9ca3af"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          </svg>
-          <input placeholder="Search..." />
-        </div>
+        <GlobalSearch userRole="admin" placeholder="Search..." />
 
         <div className="header-right">
-          <button className="notification-btn">
-            <img
-              src="/images/notification-bell.png"
-              alt="Notifications"
-              className="notification-icon"
-            />
-            <span className="notification-dot"></span>
-          </button>
+          <NotificationDropdown userRole="admin" />
 
           <div className="header-profile">
-            <img src="/images/justin.jpg" alt="Peter Parker" />
+            <img src="/images/avatar.png" alt={userFullName} />
             <div className="profile-info">
-              <strong>Peter Parker</strong>
+              <strong>{userFullName}</strong>
               <span>Admin</span>
             </div>
           </div>
@@ -163,13 +321,9 @@ const AuditLogs: React.FC = () => {
                 <img src="/images/profile.png" alt="" className="nav-icon" />
                 <span>Profile</span>
               </button>
-              <button className="nav-item">
-                <img src="/images/help-circle.png" alt="" className="nav-icon" />
-                <span>Help / Support</span>
-              </button>
             </div>
 
-            <button className="logout" onClick={() => navigate('/admin/signin')}>
+            <button className="logout" onClick={handleLogout}>
               <img src="/images/log-out.png" alt="" className="nav-icon" />
               <span>Logout</span>
             </button>
@@ -185,7 +339,7 @@ const AuditLogs: React.FC = () => {
                 <h1>Audit Logs</h1>
                 <p>Review comprehensive system activity and security logs for compliance and monitoring.</p>
               </div>
-              <button className="export-logs-btn">Export Logs</button>
+              <button className="export-logs-btn" onClick={exportLogs}>Export Logs</button>
             </div>
 
             {/* FILTERS */}
@@ -193,15 +347,16 @@ const AuditLogs: React.FC = () => {
               <div className="filter-group">
                 <label className="filter-label">User Role</label>
                 <div className="filter-select-wrapper">
-                  <select 
+                  <select
                     className="filter-select"
                     value={userRole}
                     onChange={(e) => setUserRole(e.target.value)}
                   >
                     <option value="all">All</option>
-                    <option value="doctor">Doctor</option>
-                    <option value="nurse">Nurse</option>
-                    <option value="admin">Admin</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Clinician">Clinician</option>
+                    <option value="Patient">Patient</option>
+                    <option value="LabTechnician">Lab Technician</option>
                   </select>
                   <svg className="select-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none">
                     <path d="M3 4.5L6 7.5L9 4.5" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -212,35 +367,17 @@ const AuditLogs: React.FC = () => {
               <div className="filter-group">
                 <label className="filter-label">Action Type</label>
                 <div className="filter-select-wrapper">
-                  <select 
+                  <select
                     className="filter-select"
                     value={actionType}
-                    onChange={(e) => setActionType(e.target.value)}
+                    onChange={(e) => { setActionType(e.target.value); setCurrentPage(1); }}
                   >
-                    <option value="all">All</option>
-                    <option value="Record Edit">Record Edit</option>
-                    <option value="Failed Login">Failed Login</option>
-                    <option value="Vitals Entry">Vitals Entry</option>
+                    {actionTypes.map(type => (
+                      <option key={type} value={type}>
+                        {type === 'all' ? 'All Actions' : type}
+                      </option>
+                    ))}
                   </select>
-                  <svg className="select-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M3 4.5L6 7.5L9 4.5" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
-              </div>
-
-              <div className="filter-group">
-                <label className="filter-label">Date Range</label>
-                <div className="filter-select-wrapper date-select">
-                  <svg className="calendar-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <rect x="2" y="3" width="12" height="11" rx="1.5" stroke="#6b7280" strokeWidth="1.5"/>
-                    <path d="M2 6h12M5 1v3M11 1v3" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round"/>
-                  </svg>
-                  <input 
-                    type="text" 
-                    className="filter-select date-input"
-                    value={dateRange}
-                    readOnly
-                  />
                   <svg className="select-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none">
                     <path d="M3 4.5L6 7.5L9 4.5" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
@@ -288,30 +425,61 @@ const AuditLogs: React.FC = () => {
                 </div>
 
                 <div className="al-table-body">
-                  {filteredLogs.map((log) => (
-                    <div key={log.id} className="al-table-row">
-                      <div className="al-td timestamp-col">
-                        <span className="timestamp-text">{log.timestamp}</span>
-                      </div>
-                      <div className="al-td user-col">
-                        <span className="user-text">{log.user}</span>
-                      </div>
-                      <div className="al-td action-col">
-                        <span className={`action-badge ${log.actionType.toLowerCase().replace(' ', '-')}`}>
-                          {log.action}
-                        </span>
-                      </div>
-                      <div className="al-td resource-col">
-                        <span className="resource-text">{log.affectedResource}</span>
-                      </div>
+                  {loading ? (
+                    <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
+                      Loading audit logs...
                     </div>
-                  ))}
+                  ) : paginatedLogs.length === 0 ? (
+                    <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
+                      No logs found.
+                    </div>
+                  ) : (
+                    paginatedLogs.map((log) => (
+                      <div key={log.id} className="al-table-row">
+                        <div className="al-td timestamp-col">
+                          <span className="timestamp-text">{log.timestamp}</span>
+                        </div>
+                        <div className="al-td user-col">
+                          <span className="user-text">{log.user}</span>
+                        </div>
+                        <div className="al-td action-col">
+                          <span className={`action-badge ${log.actionType.toLowerCase().replace(/\s+/g, '-')}`}>
+                            {log.action}
+                          </span>
+                        </div>
+                        <div className="al-td resource-col">
+                          <span className="resource-text">{log.affectedResource}</span>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
 
-              <div className="al-table-footer">
-                <button className="view-more-btn">View More</button>
-              </div>
+              {/* Pagination */}
+              {filteredLogs.length > itemsPerPage && (
+                <div className="al-table-footer" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', padding: '16px' }}>
+                  <button
+                    className="view-more-btn"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    style={{ opacity: currentPage === 1 ? 0.5 : 1 }}
+                  >
+                    Previous
+                  </button>
+                  <span style={{ color: '#666' }}>
+                    Page {currentPage} of {totalPages} ({filteredLogs.length} logs)
+                  </span>
+                  <button
+                    className="view-more-btn"
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage >= totalPages}
+                    style={{ opacity: currentPage >= totalPages ? 0.5 : 1 }}
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </main>

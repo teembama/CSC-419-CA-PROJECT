@@ -727,3 +727,324 @@ body {
 .dashboard-header {
   border-bottom: 1px solid #e5e7eb;
 }
+
+/* ================================
+   ENHANCED RESPONSIVE STYLES
+   ================================ */
+
+/* Tablet portrait (768px - 1024px) */
+@media (max-width: 1024px) {
+  .dashboard-header {
+    padding: 0 20px;
+  }
+
+  .sidebar {
+    width: 280px;
+    flex: 0 0 280px;
+  }
+
+  .sidebar-box {
+    min-height: calc(100vh - 140px);
+    padding: 20px 18px;
+  }
+
+  .main-content {
+    padding: 24px;
+  }
+
+  .rp-header-text h1 {
+    font-size: 24px;
+  }
+
+  .rp-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .rp-table-head,
+  .rp-table-row {
+    grid-template-columns: 1fr 1.5fr 0.8fr 1fr 1fr;
+  }
+}
+
+/* Mobile landscape and small tablets (576px - 768px) */
+@media (max-width: 768px) {
+  .dashboard-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    flex: 0 0 auto;
+    padding: 16px;
+  }
+
+  .sidebar-box {
+    min-height: auto;
+    max-height: none;
+    padding: 16px;
+  }
+
+  .nav-section {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .nav-item {
+    padding: 10px 14px;
+    flex: 0 0 auto;
+  }
+
+  .section-label {
+    width: 100%;
+    margin: 8px 0;
+  }
+
+  .logout {
+    margin-top: 16px;
+  }
+
+  .main-content {
+    padding: 16px;
+  }
+
+  .rp-page-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .create-user-btn {
+    width: 100%;
+  }
+
+  .rp-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .rp-stat-card {
+    padding: 14px;
+  }
+
+  .search-bar {
+    min-width: 180px;
+    flex: 1;
+    max-width: 300px;
+  }
+
+  .header-profile .profile-info {
+    display: none;
+  }
+
+  .rp-table-header {
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .rp-table-header h2 {
+    position: static;
+  }
+
+  .rp-search {
+    min-width: 100%;
+  }
+
+  .rp-table-head,
+  .rp-table-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 14px;
+  }
+
+  .rp-th {
+    display: none;
+  }
+
+  .rp-td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+  }
+
+  .rp-td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #6b7280;
+    font-size: 12px;
+    margin-right: 8px;
+  }
+
+  .rp-td.last-modified-col,
+  .rp-td.actions-col {
+    justify-self: stretch;
+    text-align: left;
+  }
+
+  .last-modified-text {
+    text-align: left;
+  }
+
+  .edit-permissions-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .rp-table-footer {
+    padding: 12px 14px;
+  }
+}
+
+/* Mobile portrait (up to 576px) */
+@media (max-width: 576px) {
+  .dashboard-header {
+    padding: 0 12px;
+    height: 60px;
+  }
+
+  .logo-text {
+    display: none;
+  }
+
+  .logo-image {
+    width: 32px;
+    height: 32px;
+  }
+
+  .search-bar {
+    min-width: 120px;
+    padding: 8px 12px;
+  }
+
+  .search-bar input {
+    font-size: 13px;
+  }
+
+  .header-right {
+    gap: 8px;
+  }
+
+  .notification-btn {
+    padding: 6px;
+  }
+
+  .header-profile img {
+    width: 32px;
+    height: 32px;
+  }
+
+  .sidebar {
+    padding: 12px;
+  }
+
+  .sidebar-box {
+    padding: 12px;
+  }
+
+  .nav-item {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .nav-item span {
+    display: none;
+  }
+
+  .logout span {
+    display: none;
+  }
+
+  .main-content {
+    padding: 12px;
+  }
+
+  .rp-header-text h1 {
+    font-size: 20px;
+  }
+
+  .rp-header-text p {
+    font-size: 13px;
+  }
+
+  .rp-stat-card {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .stat-icon-wrapper {
+    width: 36px;
+    height: 36px;
+  }
+
+  .stat-icon-img {
+    width: 18px;
+    height: 18px;
+  }
+
+  .stat-label {
+    font-size: 10px;
+  }
+
+  .stat-value {
+    font-size: 22px;
+  }
+
+  .stat-detail {
+    font-size: 10px;
+  }
+
+  .rp-table-container {
+    border-radius: 10px;
+  }
+
+  .rp-table-header {
+    padding: 12px;
+  }
+
+  .rp-table-header h2 {
+    font-size: 15px;
+  }
+
+  .rp-search {
+    padding: 6px 10px;
+  }
+
+  .rp-search input {
+    font-size: 12px;
+  }
+
+  .rp-table-row {
+    padding: 12px;
+  }
+
+  .role-name {
+    font-size: 14px;
+  }
+
+  .role-description {
+    font-size: 12px;
+  }
+
+  .active-users-badge {
+    padding: 3px 8px;
+    font-size: 11px;
+  }
+
+  .last-modified-text {
+    font-size: 12px;
+  }
+
+  .edit-permissions-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .view-more-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+}

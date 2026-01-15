@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../context';
+import { userAPI } from '../../../services/api';
 import ProfileSecurity from './ProfileSecurity';
+import NotificationDropdown from '../../../components/Notifications/NotificationDropdown';
+import GlobalSearch from '../../../components/Search/GlobalSearch';
 import './Profile.css';
 
 interface PasswordData {
@@ -17,23 +21,51 @@ interface PasswordErrors {
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
+  const { user, logout, refreshUser } = useAuth();
   const [activeTab, setActiveTab] = useState<'personal' | 'security'>('personal');
-  const [isEditing, setIsEditing] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  // Get user display name
+  const userName = user?.first_name || user?.firstName || 'Admin';
+  const userFullName = `${user?.first_name || user?.firstName || ''} ${user?.last_name || user?.lastName || ''}`.trim() || 'Admin User';
+  const userEmail = user?.email || 'admin@citycare.com';
 
   const [formData, setFormData] = useState({
-    firstName: 'John',
-    lastName: 'Doe',
-    dateOfBirth: '15/02/1985',
+    firstName: '',
+    lastName: '',
+    dateOfBirth: '',
     gender: 'Male',
-    staffId: '884201-XYZ-55',
-    email: 'johndoe@example.com',
-    phone: '801 234 5678',
+    staffId: '',
+    email: '',
+    phone: '',
     phoneCode: '+234',
-    address: '123 Wellness Blvd, Apt 4B',
-    city: 'Lagos',
-    state: 'Lagos',
-    zipCode: '10001'
+    address: '',
+    city: '',
+    state: '',
+    zipCode: ''
   });
+
+  // Load user data on mount
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        firstName: user.first_name || user.firstName || '',
+        lastName: user.last_name || user.lastName || '',
+        dateOfBirth: user.date_of_birth ? new Date(user.date_of_birth).toISOString().split('T')[0] : '',
+        gender: user.gender || 'Male',
+        staffId: user.id?.slice(0, 8) || '',
+        email: user.email || '',
+        phone: user.phone_number || '',
+        phoneCode: '+234',
+        address: user.address || '',
+        city: user.city || '',
+        state: user.state || '',
+        zipCode: user.zip_code || ''
+      });
+    }
+  }, [user]);
 
   // Password state
   const [passwordData, setPasswordData] = useState<PasswordData>({
@@ -99,24 +131,52 @@ const Profile: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSaveChanges = () => {
-    if (activeTab === 'security') {
-      if (validatePassword()) {
-        console.log('Updating password');
-        // TODO: Add your API call here
-        alert('Password updated successfully!');
-        setPasswordData({
-          currentPassword: '',
-          newPassword: '',
-          confirmNewPassword: '',
+  const handleSaveChanges = async () => {
+    setLoading(true);
+    setFeedbackMessage(null);
+
+    try {
+      if (activeTab === 'security') {
+        if (validatePassword()) {
+          await userAPI.changePassword(
+            passwordData.currentPassword,
+            passwordData.newPassword
+          );
+          setFeedbackMessage({ type: 'success', text: 'Password updated successfully!' });
+          setPasswordData({
+            currentPassword: '',
+            newPassword: '',
+            confirmNewPassword: '',
+          });
+          setIsEditing(false);
+        }
+      } else {
+        await userAPI.updateProfile({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          phoneNumber: formData.phone,
+          address: formData.address,
+          city: formData.city,
+          state: formData.state,
+          zipCode: formData.zipCode,
         });
+        setFeedbackMessage({ type: 'success', text: 'Profile updated successfully!' });
         setIsEditing(false);
+        await refreshUser();
       }
-    } else {
-      setIsEditing(false);
-      console.log('Saved:', formData);
-      alert('Profile updated successfully!');
+    } catch (error: any) {
+      setFeedbackMessage({
+        type: 'error',
+        text: error.response?.data?.message || 'Failed to save changes. Please try again.'
+      });
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/admin/signin');
   };
 
   return (
@@ -132,33 +192,15 @@ const Profile: React.FC = () => {
           <span className="logo-text logo-gradient">CityCare</span>
         </div>
 
-        <div className="search-bar">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <circle cx="9" cy="9" r="6" stroke="#9ca3af" strokeWidth="2" />
-            <path
-              d="M13.5 13.5L17 17"
-              stroke="#9ca3af"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          </svg>
-          <input placeholder="Search..." />
-        </div>
+        <GlobalSearch userRole="admin" placeholder="Search..." />
 
         <div className="header-right">
-          <button className="notification-btn">
-            <img
-              src="/images/notification-bell.png"
-              alt="Notifications"
-              className="notification-icon"
-            />
-            <span className="notification-dot"></span>
-          </button>
+          <NotificationDropdown userRole="admin" />
 
           <div className="header-profile">
-            <img src="/images/justin.jpg" alt="Peter Parker" />
+            <img src="/images/avatar.png" alt={userFullName} />
             <div className="profile-info">
-              <strong>Peter Parker</strong>
+              <strong>{userFullName}</strong>
               <span>Admin</span>
             </div>
           </div>
@@ -211,13 +253,9 @@ const Profile: React.FC = () => {
                 <img src="/images/profile.png" alt="" className="nav-icon" />
                 <span>Profile</span>
               </button>
-              <button className="nav-item">
-                <img src="/images/help-circle.png" alt="" className="nav-icon" />
-                <span>Help / Support</span>
-              </button>
             </div>
 
-            <button className="logout" onClick={() => navigate('/admin/signin')}>
+            <button className="logout" onClick={handleLogout}>
               <img src="/images/log-out.png" alt="" className="nav-icon" />
               <span>Logout</span>
             </button>
@@ -269,13 +307,13 @@ const Profile: React.FC = () => {
             <div className="profile-content">
               {/* LEFT SIDEBAR */}
               <div className="profile-left-column">
-                {/* JOHN DOE CARD */}
+                {/* USER CARD */}
                 <div className="profile-sidebar-card">
                   <div className="profile-avatar-section">
                     <div className="profile-avatar-wrapper">
                       <img
-                        src="/images/justin.jpg"
-                        alt="John Doe"
+                        src="/images/avatar.png"
+                        alt={userFullName}
                         className="profile-avatar"
                       />
 
@@ -289,10 +327,10 @@ const Profile: React.FC = () => {
                       </button>
                     </div>
 
-                    <div className="profile-name">John Doe</div>
-                    <div className="profile-email">johndoe@example.com</div>
+                    <div className="profile-name">{userFullName}</div>
+                    <div className="profile-email">{userEmail}</div>
 
-                    <span className="profile-badge">Active Patient</span>
+                    <span className="profile-badge">Active Admin</span>
                   </div>
                 </div>
 
@@ -300,19 +338,19 @@ const Profile: React.FC = () => {
                 <div className="profile-sidebar-card quick-actions-card">
                   <h4 className="quick-actions-title">Quick Actions</h4>
 
-                  <button className="quick-action-btn">
+                  <button className="quick-action-btn" onClick={() => navigate('/admin/user-management')}>
                     <div className="quick-action-icon request-icon">
-                      <img src="/images/clock-rotate-right.png" width={20} />
+                      <img src="/images/group.png" width={20} />
                     </div>
-                    Request Records
+                    Manage Users
                     <span className="arrow-right">›</span>
                   </button>
 
-                  <button className="quick-action-btn">
+                  <button className="quick-action-btn" onClick={() => navigate('/admin/audit-logs')}>
                     <div className="quick-action-icon share-icon">
-                      <img src="/images/share-ios.png" width={20} />
+                      <img src="/images/clock-rotate-right.png" width={20} />
                     </div>
-                    Share Profile
+                    View Audit Logs
                     <span className="arrow-right">›</span>
                   </button>
                 </div>
@@ -365,17 +403,12 @@ const Profile: React.FC = () => {
                             <label>Date of Birth</label>
                             <div className="input-with-icon">
                               <input
-                                type="text"
+                                type="date"
                                 name="dateOfBirth"
                                 value={formData.dateOfBirth}
                                 onChange={handleInputChange}
                                 disabled={!isEditing}
-                                placeholder="15/02/1985"
                               />
-                              <svg className="input-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                <rect x="3" y="4" width="14" height="14" rx="2" stroke="#9ca3af" strokeWidth="1.5" />
-                                <path d="M3 8h14M7 2v3M13 2v3" stroke="#9ca3af" strokeWidth="1.5" strokeLinecap="round" />
-                              </svg>
                             </div>
                           </div>
 

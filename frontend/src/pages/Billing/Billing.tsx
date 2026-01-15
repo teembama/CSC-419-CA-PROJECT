@@ -170,7 +170,7 @@ export const Billing: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {invoices.slice(0, 5).map((invoice) => {
+                {invoices.map((invoice) => {
                   // Get description from line items or default
                   const description = invoice.billing_line_items?.length
                     ? invoice.billing_line_items.map(item => item.description).join(', ')
@@ -199,9 +199,6 @@ export const Billing: React.FC = () => {
             <p style={{ padding: '20px', textAlign: 'center', color: '#666' }}>
               No invoices found
             </p>
-          )}
-          {invoices.length > 5 && (
-            <a href="#" className={styles.viewAllLink}>View All Invoices &gt;&gt;</a>
           )}
         </div>
 
@@ -235,7 +232,13 @@ export const Billing: React.FC = () => {
             </p>
           )}
           {payments.length > 5 && (
-            <a href="#" className={styles.viewAllLink}>View All Payments &gt;&gt;</a>
+            <button
+              className={styles.viewAllLink}
+              onClick={() => {/* Show all payments - already showing in table */}}
+              style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+            >
+              View All Payments &gt;&gt;
+            </button>
           )}
         </div>
       </div>

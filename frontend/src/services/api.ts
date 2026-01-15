@@ -361,6 +361,10 @@ export const labAPI = {
     const response = await api.get('/lab/stats');
     return response.data;
   },
+  getResults: async (filters?: { status?: string; isAbnormal?: boolean }) => {
+    const response = await api.get('/lab/results', { params: filters });
+    return response.data;
+  },
 };
 
 // Billing API
@@ -451,6 +455,113 @@ export const notificationAPI = {
   },
   requestRecords: async (email?: string) => {
     const response = await api.post('/notifications/request-records', { email });
+    return response.data;
+  },
+};
+
+// Admin API (for admin dashboard and management)
+export const adminAPI = {
+  getDashboardStats: async () => {
+    try {
+      // Use the admin dashboard endpoint
+      const response = await api.get('/admin/dashboard').catch(() => null);
+      if (response?.data) {
+        return {
+          totalUsers: response.data.users?.total || 0,
+          activeClinicians: response.data.roles?.clinicians || 0,
+          activePatients: response.data.roles?.patients || 0,
+          pendingVerifications: response.data.users?.inactive || 0,
+        };
+      }
+      // Fallback: calculate from users list
+      const usersResponse = await api.get('/admin/users').catch(() => ({ data: { data: [] } }));
+      const users = usersResponse.data?.data || usersResponse.data || [];
+
+      const totalUsers = Array.isArray(users) ? users.length : 0;
+      const activeClinicians = Array.isArray(users) ? users.filter((u: any) =>
+        (u.roles?.name === 'Clinician' || u.role === 'clinician') && u.is_active !== false
+      ).length : 0;
+      const activePatients = Array.isArray(users) ? users.filter((u: any) =>
+        (u.roles?.name === 'Patient' || u.role === 'patient') && u.is_active !== false
+      ).length : 0;
+      const pendingVerifications = Array.isArray(users) ? users.filter((u: any) =>
+        u.is_active === false || u.status === 'pending'
+      ).length : 0;
+
+      return {
+        totalUsers,
+        activeClinicians,
+        activePatients,
+        pendingVerifications,
+      };
+    } catch (error) {
+      console.error('Error fetching admin dashboard stats:', error);
+      return {
+        totalUsers: 0,
+        activeClinicians: 0,
+        activePatients: 0,
+        pendingVerifications: 0,
+      };
+    }
+  },
+  getUsers: async (filters?: { search?: string; roleId?: number; isActive?: boolean; page?: number; limit?: number }) => {
+    const response = await api.get('/admin/users', { params: filters });
+    return response.data;
+  },
+  getUser: async (userId: string) => {
+    const response = await api.get(`/admin/users/${userId}`);
+    return response.data;
+  },
+  updateUserStatus: async (userId: string, isActive: boolean) => {
+    const response = await api.patch(`/admin/users/${userId}/status`, { isActive });
+    return response.data;
+  },
+  assignRole: async (userId: string, roleId: number) => {
+    const response = await api.patch(`/admin/users/${userId}/role`, { roleId });
+    return response.data;
+  },
+  getRoles: async () => {
+    const response = await api.get('/admin/roles');
+    return response.data;
+  },
+  getAuditLogs: async (filters?: { startDate?: string; endDate?: string; action?: string }) => {
+    const response = await api.get('/admin/audit-logs', { params: filters });
+    return response.data;
+  },
+  getRecentActivity: async () => {
+    const response = await api.get('/admin/audit-logs', { params: { limit: 10 } });
+    return response.data;
+  },
+  getPendingVerifications: async () => {
+    const response = await api.get('/admin/users', { params: { isActive: false, limit: 10 } });
+    return response.data;
+  },
+  createUser: async (userData: {
+    email: string;
+    password: string;
+    first_name: string;
+    last_name: string;
+    role_id: number;
+    phone_number?: string;
+  }) => {
+    const response = await api.post('/admin/users', userData);
+    return response.data;
+  },
+  deleteUser: async (userId: string) => {
+    const response = await api.delete(`/admin/users/${userId}`);
+    return response.data;
+  },
+  // Permissions management
+  getAllPermissions: async () => {
+    const response = await api.get('/admin/permissions');
+    return response.data;
+  },
+  getRolePermissions: async (roleId: number) => {
+    const response = await api.get(`/admin/roles/${roleId}/permissions`);
+    return response.data;
+  },
+  updateRolePermissions: async (roleId: number, permissionIds: string[]) => {
+    const response = await api.put(`/admin/roles/${roleId}/permissions`, { permissionIds });
     return response.data;
   },
 };

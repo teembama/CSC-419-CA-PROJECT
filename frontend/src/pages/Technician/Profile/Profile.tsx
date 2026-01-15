@@ -1,5 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../context';
+import { userAPI } from '../../../services/api';
+import ProfileSecurity from './ProfileSecurity';
+import NotificationDropdown from '../../../components/Notifications/NotificationDropdown';
+import GlobalSearch from '../../../components/Search/GlobalSearch';
 import './Profile.css';
 
 interface ProfileData {
@@ -17,54 +22,166 @@ interface ProfileData {
   zipCode: string;
 }
 
+interface PasswordData {
+  currentPassword: string;
+  newPassword: string;
+  confirmNewPassword: string;
+}
+
+interface PasswordErrors {
+  currentPassword?: string;
+  newPassword?: string;
+  confirmNewPassword?: string;
+}
+
 const Profile: React.FC = () => {
   const navigate = useNavigate();
+  const { user, logout, refreshUser } = useAuth();
   const [activeTab, setActiveTab] = useState<'personal' | 'security'>('personal');
   const [isEditing, setIsEditing] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Mock user data
-  const user = {
-    name: 'Peter Parker',
-    role: 'Lab Technician',
-    avatar: '/images/avatar.png',
-    email: 'johndoe@example.com',
-    status: 'Active Patient',
-  };
+  // Password state
+  const [passwordData, setPasswordData] = useState<PasswordData>({
+    currentPassword: '',
+    newPassword: '',
+    confirmNewPassword: '',
+  });
+  const [passwordErrors, setPasswordErrors] = useState<PasswordErrors>({});
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Get user display name from AuthContext
+  const userFullName = `${user?.first_name || user?.firstName || ''} ${user?.last_name || user?.lastName || ''}`.trim() || 'Lab Technician';
 
   const [profileData, setProfileData] = useState<ProfileData>({
-    firstName: 'John',
-    lastName: 'Doe',
-    dateOfBirth: '15/02/1985',
-    gender: 'Male',
-    staffId: '884201-XYZ-55',
-    email: 'johndoe@example.com',
-    phone: '801 234 5678',
+    firstName: '',
+    lastName: '',
+    dateOfBirth: '',
+    gender: '',
+    staffId: '',
+    email: '',
+    phone: '',
     countryCode: '+234',
-    address: '123 Wellness Blvd, Apt 4B',
-    city: 'Lagos',
-    state: 'Lagos',
-    zipCode: '100001',
+    address: '',
+    city: '',
+    state: '',
+    zipCode: '',
   });
+
+  // Load user data from AuthContext
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        firstName: user.first_name || user.firstName || '',
+        lastName: user.last_name || user.lastName || '',
+        dateOfBirth: user.date_of_birth || user.dateOfBirth || '',
+        gender: user.gender || '',
+        staffId: user.id?.slice(0, 8).toUpperCase() || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        countryCode: '+234',
+        address: user.address || '',
+        city: user.city || '',
+        state: user.state || '',
+        zipCode: user.zipCode || user.zip_code || '',
+      });
+    }
+  }, [user]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setProfileData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSaveChanges = () => {
-    // TODO: Implement API call to save profile data
-    console.log('Saving profile data:', profileData);
-    setIsEditing(false);
-    alert('Profile updated successfully!');
+  const handlePasswordInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setPasswordData(prev => ({ ...prev, [name]: value }));
+    // Clear error when user starts typing
+    if (passwordErrors[name as keyof PasswordErrors]) {
+      setPasswordErrors(prev => ({ ...prev, [name]: undefined }));
+    }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('user');
-    sessionStorage.clear();
+  const validatePassword = (): boolean => {
+    const errors: PasswordErrors = {};
+
+    if (!passwordData.currentPassword) {
+      errors.currentPassword = 'Current password is required';
+    }
+
+    if (!passwordData.newPassword) {
+      errors.newPassword = 'New password is required';
+    } else {
+      const hasMinLength = passwordData.newPassword.length >= 8;
+      const hasLowercase = /[a-z]/.test(passwordData.newPassword);
+      const hasUppercase = /[A-Z]/.test(passwordData.newPassword);
+      const hasNumber = /\d/.test(passwordData.newPassword);
+      const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(passwordData.newPassword);
+
+      if (!hasMinLength || !hasLowercase || !hasUppercase || !hasNumber || !hasSpecialChar) {
+        errors.newPassword = 'Password does not meet all requirements';
+      }
+    }
+
+    if (!passwordData.confirmNewPassword) {
+      errors.confirmNewPassword = 'Please confirm your password';
+    } else if (passwordData.newPassword !== passwordData.confirmNewPassword) {
+      errors.confirmNewPassword = 'Passwords do not match';
+    }
+
+    setPasswordErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSaveChanges = async () => {
+    setIsSaving(true);
+    setSaveMessage(null);
+
+    try {
+      if (activeTab === 'security') {
+        if (validatePassword()) {
+          await userAPI.changePassword(
+            passwordData.currentPassword,
+            passwordData.newPassword
+          );
+          setSaveMessage({ type: 'success', text: 'Password updated successfully!' });
+          setPasswordData({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
+          setIsEditing(false);
+        }
+      } else {
+        await userAPI.updateProfile({
+          firstName: profileData.firstName,
+          lastName: profileData.lastName,
+          phoneNumber: profileData.phone,
+          address: profileData.address,
+          city: profileData.city,
+          state: profileData.state,
+          zipCode: profileData.zipCode,
+        });
+
+        setIsEditing(false);
+        setSaveMessage({ type: 'success', text: 'Profile updated successfully!' });
+        if (refreshUser) await refreshUser();
+      }
+
+      // Clear message after 3 seconds
+      setTimeout(() => setSaveMessage(null), 3000);
+    } catch (error: any) {
+      console.error('Error saving:', error);
+      const message = error.response?.data?.message || 'Failed to save changes. Please try again.';
+      setSaveMessage({ type: 'error', text: message });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await logout();
     navigate('/technician/signin');
   };
 
@@ -78,27 +195,16 @@ const Profile: React.FC = () => {
         </div>
 
         <div className="profile-header-center">
-          <div className="profile-search-bar">
-            <span className="profile-search-icon">🔍</span>
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
+          <GlobalSearch userRole="technician" placeholder="Search..." />
         </div>
 
         <div className="profile-header-right">
-          <button className="profile-notification-btn">
-            <span className="profile-bell-icon">🔔</span>
-            <span className="profile-notification-badge">2</span>
-          </button>
+          <NotificationDropdown userRole="technician" />
           <div className="profile-user-info">
-            <img src={user.avatar} alt={user.name} className="profile-user-avatar" />
+            <img src="/images/avatar.png" alt={userFullName} className="profile-user-avatar" />
             <div className="profile-user-details">
-              <span className="profile-user-name">{user.name}</span>
-              <span className="profile-user-role">{user.role}</span>
+              <span className="profile-user-name">{userFullName}</span>
+              <span className="profile-user-role">Lab Technician</span>
             </div>
           </div>
         </div>
@@ -141,10 +247,6 @@ const Profile: React.FC = () => {
                 <span className="profile-nav-icon">👤</span>
                 <span className="profile-nav-label">Profile</span>
               </button>
-              <button className="profile-nav-item" >
-                <span className="profile-nav-icon">❓</span>
-                <span className="profile-nav-label">Help / Support</span>
-              </button>
             </div>
           </nav>
 
@@ -169,6 +271,22 @@ const Profile: React.FC = () => {
             </div>
           </div>
 
+          {/* Save Message */}
+          {saveMessage && (
+            <div
+              style={{
+                padding: '12px 16px',
+                borderRadius: '8px',
+                marginBottom: '16px',
+                backgroundColor: saveMessage.type === 'success' ? '#ecfdf5' : '#fef2f2',
+                color: saveMessage.type === 'success' ? '#059669' : '#dc2626',
+                border: `1px solid ${saveMessage.type === 'success' ? '#a7f3d0' : '#fecaca'}`,
+              }}
+            >
+              {saveMessage.text}
+            </div>
+          )}
+
           {/* Tabs */}
           <div className="profile-tabs">
             <button
@@ -183,8 +301,12 @@ const Profile: React.FC = () => {
             >
               Security
             </button>
-            <button className="profile-save-btn" onClick={handleSaveChanges}>
-              Save Changes
+            <button
+              className="profile-save-btn"
+              onClick={handleSaveChanges}
+              disabled={isSaving}
+            >
+              {isSaving ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
 
@@ -194,26 +316,26 @@ const Profile: React.FC = () => {
             <div className="profile-card">
               <div className="profile-avatar-section">
                 <div className="profile-avatar-wrapper">
-                  <img src={user.avatar} alt={user.name} className="profile-avatar-large" />
+                  <img src="/images/avatar.png" alt={userFullName} className="profile-avatar-large" />
                   <button className="profile-avatar-edit">
                     <span>✏️</span>
                   </button>
                 </div>
                 <h3 className="profile-card-name">{profileData.firstName} {profileData.lastName}</h3>
                 <p className="profile-card-email">{profileData.email}</p>
-                <span className="profile-status-badge">{user.status}</span>
+                <span className="profile-status-badge">Active Technician</span>
               </div>
 
               <div className="profile-quick-actions">
                 <h4 className="profile-quick-actions-title">Quick Actions</h4>
-                <button className="profile-action-btn">
-                  <span className="profile-action-icon">📁</span>
-                  <span className="profile-action-text">Request Records</span>
+                <button className="profile-action-btn" onClick={() => navigate('/technician/lab-orders')}>
+                  <span className="profile-action-icon">📋</span>
+                  <span className="profile-action-text">View Pending Orders</span>
                   <span className="profile-action-arrow">›</span>
                 </button>
-                <button className="profile-action-btn">
-                  <span className="profile-action-icon">📤</span>
-                  <span className="profile-action-text">Share Profile</span>
+                <button className="profile-action-btn" onClick={() => navigate('/technician/results')}>
+                  <span className="profile-action-icon">📊</span>
+                  <span className="profile-action-text">Upload Results</span>
                   <span className="profile-action-arrow">›</span>
                 </button>
               </div>
@@ -262,17 +384,14 @@ const Profile: React.FC = () => {
 
                       <div className="profile-form-group">
                         <label className="profile-form-label">Date of Birth</label>
-                        <div className="profile-input-with-icon">
-                          <input
-                            type="text"
-                            name="dateOfBirth"
-                            className="profile-form-input"
-                            value={profileData.dateOfBirth}
-                            onChange={handleInputChange}
-                            disabled={!isEditing}
-                          />
-                          <span className="profile-input-icon">📅</span>
-                        </div>
+                        <input
+                          type="date"
+                          name="dateOfBirth"
+                          className="profile-form-input"
+                          value={profileData.dateOfBirth}
+                          onChange={handleInputChange}
+                          disabled={!isEditing}
+                        />
                       </div>
 
                       <div className="profile-form-group">
@@ -397,13 +516,20 @@ const Profile: React.FC = () => {
                 </>
               ) : (
                 // Security Tab Content
-                <div className="profile-form-section">
-                  <h3 className="profile-form-title">Security Settings</h3>
-                  <p className="profile-security-message">
-                    Change your password and manage security settings here.
-                  </p>
-                  {/* TODO: Add security form */}
-                </div>
+                <ProfileSecurity
+                  passwordData={passwordData}
+                  errors={passwordErrors}
+                  showCurrentPassword={showCurrentPassword}
+                  showNewPassword={showNewPassword}
+                  showConfirmPassword={showConfirmPassword}
+                  isEditing={isEditing}
+                  onPasswordInputChange={handlePasswordInputChange}
+                  onToggleCurrentPassword={() => setShowCurrentPassword(!showCurrentPassword)}
+                  onToggleNewPassword={() => setShowNewPassword(!showNewPassword)}
+                  onToggleConfirmPassword={() => setShowConfirmPassword(!showConfirmPassword)}
+                  onSaveChanges={handleSaveChanges}
+                  onEditInfo={() => setIsEditing(!isEditing)}
+                />
               )}
             </div>
           </div>

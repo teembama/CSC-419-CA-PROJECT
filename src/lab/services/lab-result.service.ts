@@ -90,6 +90,69 @@ export class LabResultService {
     );
   }
 
+  /**
+   * Get all lab results with patient info (for lab technicians)
+   */
+  async getAllResults(filters?: { isAbnormal?: boolean }) {
+    const results = await this.prisma.lab_results.findMany({
+      where: filters?.isAbnormal !== undefined
+        ? { abnormality_flag: filters.isAbnormal ? { not: 'Normal' } : 'Normal' }
+        : {},
+      include: {
+        lab_test_items: {
+          include: {
+            lab_orders: {
+              include: {
+                patient_encounters: {
+                  include: {
+                    patient_charts: {
+                      include: {
+                        users: {
+                          select: {
+                            id: true,
+                            first_name: true,
+                            last_name: true,
+                            email: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      orderBy: { id: 'desc' },
+    });
+
+    return results.map(result => {
+      const patient = result.lab_test_items?.lab_orders?.patient_encounters?.patient_charts?.users;
+      return {
+        id: result.id,
+        test_item_id: result.test_item_id,
+        test_name: result.lab_test_items?.test_name || 'Unknown Test',
+        result_value: result.result_value,
+        abnormality_flag: result.abnormality_flag,
+        file_url: result.file_url,
+        is_verified: result.is_verified,
+        verified_by: result.verified_by,
+        created_at: result.lab_test_items?.lab_orders?.patient_encounters?.date,
+        lab_orders: result.lab_test_items?.lab_orders ? {
+          id: result.lab_test_items.lab_orders.id,
+          status: result.lab_test_items.lab_orders.status,
+          priority: result.lab_test_items.lab_orders.priority,
+          patient_encounters: {
+            patient_charts: {
+              users: patient,
+            },
+          },
+        } : null,
+      };
+    });
+  }
+
   async getResultsByChartId(chartId: string, includeUnverified: boolean = false) {
     // Get encounters for this chart first
     const encounters = await this.prisma.patient_encounters.findMany({

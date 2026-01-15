@@ -237,8 +237,14 @@ export class AdminService {
       this.prisma.system_audit_logs.count({ where }),
     ]);
 
+    // Convert BigInt id to string for JSON serialization
+    const serializedLogs = logs.map(log => ({
+      ...log,
+      id: log.id.toString(),
+    }));
+
     return {
-      data: logs,
+      data: serializedLogs,
       meta: {
         total,
         page,
@@ -246,6 +252,52 @@ export class AdminService {
         totalPages: Math.ceil(total / limit),
       },
     };
+  }
+
+  // ============================================
+  // PERMISSIONS MANAGEMENT
+  // ============================================
+
+  async getAllPermissions() {
+    return this.prisma.permissions.findMany({
+      orderBy: { category: 'asc' },
+    });
+  }
+
+  async getRolePermissions(roleId: number) {
+    const rolePermissions = await this.prisma.role_permissions.findMany({
+      where: { role_id: roleId },
+      include: {
+        permissions: true,
+      },
+    });
+
+    return rolePermissions.map(rp => ({
+      id: rp.permissions.id,
+      name: rp.permissions.name,
+      description: rp.permissions.description,
+      category: rp.permissions.category,
+    }));
+  }
+
+  async updateRolePermissions(roleId: number, permissionIds: string[]) {
+    // Delete existing permissions for this role
+    await this.prisma.role_permissions.deleteMany({
+      where: { role_id: roleId },
+    });
+
+    // Add new permissions
+    if (permissionIds.length > 0) {
+      await this.prisma.role_permissions.createMany({
+        data: permissionIds.map(permissionId => ({
+          role_id: roleId,
+          permission_id: permissionId,
+        })),
+      });
+    }
+
+    // Return updated permissions
+    return this.getRolePermissions(roleId);
   }
 
   // ============================================

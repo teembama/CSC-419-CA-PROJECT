@@ -4,6 +4,7 @@ import {
   SignUp,
   SignIn,
   ForgotPassword,
+  ResetPassword,
   Home,
   Prescriptions,
   MedicalRecords,
@@ -59,6 +60,7 @@ function App() {
         <Route path="/login" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
         {/* Clinician Authentication Routes (no sidebar/header) */}
         <Route path="/clinician/signin" element={<ClinicianSignIn />} />

@@ -462,19 +462,7 @@ body {
 }
 
 .avatar-edit-btn {
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
-  width: 32px;
-  height: 32px;
-  background: #0ea5e9;
-  border: 3px solid #fff;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
+  display: none;
 }
 
 .avatar-edit-btn:hover {

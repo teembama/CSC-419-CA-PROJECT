@@ -1,5 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../context';
+import { labAPI } from '../../../services/api';
+import { formatTime, formatShortDate } from '../../../utils/dateUtils';
+import NotificationDropdown from '../../../components/Notifications/NotificationDropdown';
+import GlobalSearch from '../../../components/Search/GlobalSearch';
 import '../Dashboard/Dashboard.css';
 import './LabOrders.css';
 
@@ -13,105 +18,177 @@ interface Order {
   status: string;
   date: string;
   action: string;
+  rawStatus: string;
 }
 
 const LabOrders: React.FC = () => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All Statuses');
   const [priorityFilter, setPriorityFilter] = useState('All Priorities');
-  const [dateRange, setDateRange] = useState('Oct 24 - Oct 25, 2025');
   const [currentPage, setCurrentPage] = useState(1);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [allOrders, setAllOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState<string | null>(null);
+  const itemsPerPage = 10;
 
-  // Mock user data
-  const user = {
-    name: 'Peter Parker',
-    role: 'Lab Technician',
-    avatar: '/images/avatar.png',
+  // Get user display name from AuthContext
+  const userFullName = `${user?.first_name || user?.firstName || ''} ${user?.last_name || user?.lastName || ''}`.trim() || 'Lab Technician';
+
+  // Status mapping
+  const statusMap: Record<string, string> = {
+    'Ordered': 'Pending',
+    'In Progress': 'In Progress',
+    'Completed': 'Completed',
+    'Cancelled': 'Cancelled',
+    'Pending': 'Pending',
+    'InProgress': 'In Progress'
   };
 
-  // Mock orders data
-  const orders: Order[] = [
-    {
-      id: '1',
-      timeReceived: '09:15 AM',
-      orderId: '#LAB-2901',
-      patientName: 'John Doe',
-      testType: 'Complete Blood Count',
-      priority: 'Urgent',
-      status: 'In Progress',
-      date: 'Oct 25',
-      action: 'Update',
-    },
-    {
-      id: '2',
-      timeReceived: '09:15 AM',
-      orderId: '#LAB-2901',
-      patientName: 'John Doe',
-      testType: 'Complete Blood Count',
-      priority: 'Urgent',
-      status: 'In Progress',
-      date: 'Oct 25',
-      action: 'Collect',
-    },
-    {
-      id: '3',
-      timeReceived: '09:15 AM',
-      orderId: '#LAB-2901',
-      patientName: 'John Doe',
-      testType: 'Complete Blood Count',
-      priority: 'Urgent',
-      status: 'In Progress',
-      date: 'Oct 25',
-      action: 'Process',
-    },
-    {
-      id: '4',
-      timeReceived: '09:15 AM',
-      orderId: '#LAB-2901',
-      patientName: 'John Doe',
-      testType: 'Complete Blood Count',
-      priority: 'Urgent',
-      status: 'In Progress',
-      date: 'Oct 25',
-      action: 'Update',
-    },
-    {
-      id: '5',
-      timeReceived: '09:15 AM',
-      orderId: '#LAB-2901',
-      patientName: 'John Doe',
-      testType: 'Complete Blood Count',
-      priority: 'Urgent',
-      status: 'In Progress',
-      date: 'Oct 25',
-      action: 'View',
-    },
-    {
-      id: '6',
-      timeReceived: '09:15 AM',
-      orderId: '#LAB-2901',
-      patientName: 'John Doe',
-      testType: 'Complete Blood Count',
-      priority: 'Urgent',
-      status: 'In Progress',
-      date: 'Oct 25',
-      action: 'Update',
-    },
-  ];
+  const fetchLabOrders = async () => {
+    try {
+      setLoading(true);
+      const labOrders = await labAPI.getOrders().catch(() => []);
+      const ordersArray = Array.isArray(labOrders) ? labOrders : [];
 
-  const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('user');
-    sessionStorage.clear();
+      // Transform orders for display
+      const transformedOrders = ordersArray.map((order: any) => {
+        // Patient info comes from chart.patient in the API response
+        const patient = order.chart?.patient || order.patient_encounters?.patient_charts?.users;
+        const patientName = patient
+          ? `${patient.first_name || ''} ${patient.last_name || ''}`.trim()
+          : 'Unknown Patient';
+
+        // Test type from testItems array or lab_test_items
+        const testType = order.testItems?.[0]?.testName || order.lab_test_items?.[0]?.test_name || 'Lab Test';
+
+        // Use createdAt from backend (encounter date) or created_at fallback
+        const createdAt = order.createdAt || order.created_at;
+        const timeReceived = formatTime(createdAt);
+        const date = formatShortDate(createdAt);
+        const orderId = order.id ? `#LAB-${order.id.slice(0, 4).toUpperCase()}` : 'N/A';
+
+        const displayStatus = statusMap[order.status] || order.status || 'Pending';
+        const action = displayStatus === 'Pending' || displayStatus === 'Ordered'
+          ? 'Start Test'
+          : displayStatus === 'In Progress'
+            ? 'Complete'
+            : 'View';
+
+        return {
+          id: order.id || `temp-${Math.random()}`,
+          timeReceived,
+          orderId,
+          patientName,
+          testType,
+          priority: order.priority === 'STAT' ? 'Urgent' : order.priority || 'Routine',
+          status: displayStatus,
+          rawStatus: order.status,
+          date,
+          action,
+        };
+      });
+
+      setAllOrders(transformedOrders);
+      setOrders(transformedOrders);
+    } catch (error) {
+      console.error('Error fetching lab orders:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLabOrders();
+  }, []);
+
+  // Filter orders when filters change
+  useEffect(() => {
+    let filtered = [...allOrders];
+
+    // Filter by status
+    if (statusFilter !== 'All Statuses') {
+      filtered = filtered.filter(order => order.status === statusFilter);
+    }
+
+    // Filter by priority
+    if (priorityFilter !== 'All Priorities') {
+      filtered = filtered.filter(order => order.priority === priorityFilter);
+    }
+
+    // Filter by search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(order =>
+        order.patientName.toLowerCase().includes(query) ||
+        order.orderId.toLowerCase().includes(query) ||
+        order.testType.toLowerCase().includes(query)
+      );
+    }
+
+    setOrders(filtered);
+    setCurrentPage(1);
+  }, [statusFilter, priorityFilter, searchQuery, allOrders]);
+
+  const handleLogout = async () => {
+    await logout();
     navigate('/technician/signin');
   };
 
   const resetFilters = () => {
     setStatusFilter('All Statuses');
     setPriorityFilter('All Priorities');
-    setDateRange('Oct 24 - Oct 25, 2025');
+    setSearchQuery('');
+  };
+
+  const handleOrderAction = async (order: Order) => {
+    if (order.action === 'View') {
+      // Navigate to results page for completed orders
+      navigate('/technician/results');
+      return;
+    }
+
+    setUpdating(order.id);
+    try {
+      let newStatus = '';
+      if (order.action === 'Start Test') {
+        newStatus = 'In Progress';
+      } else if (order.action === 'Complete') {
+        newStatus = 'Completed';
+      }
+
+      if (newStatus) {
+        await labAPI.updateOrderStatus(order.id, newStatus);
+        // Refresh orders after update
+        await fetchLabOrders();
+      }
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      alert('Failed to update order status. Please try again.');
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  // Pagination
+  const totalPages = Math.ceil(orders.length / itemsPerPage);
+  const paginatedOrders = orders.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const getPriorityClass = (priority: string): string => {
+    switch (priority) {
+      case 'Urgent':
+      case 'STAT':
+        return 'urgent';
+      case 'Routine':
+        return 'routine';
+      default:
+        return 'routine';
+    }
   };
 
   return (
@@ -124,27 +201,16 @@ const LabOrders: React.FC = () => {
         </div>
 
         <div className="tech-header-center">
-          <div className="tech-search-bar">
-            <span className="tech-search-icon">🔍</span>
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
+          <GlobalSearch userRole="technician" placeholder="Search orders..." />
         </div>
 
         <div className="tech-header-right">
-          <button className="tech-notification-btn">
-            <span className="tech-bell-icon">🔔</span>
-            <span className="tech-notification-badge">2</span>
-          </button>
+          <NotificationDropdown userRole="technician" />
           <div className="tech-user-profile">
-            <img src={user.avatar} alt={user.name} className="tech-user-avatar" />
+            <img src="/images/avatar.png" alt={userFullName} className="tech-user-avatar" />
             <div className="tech-user-info">
-              <span className="tech-user-name">{user.name}</span>
-              <span className="tech-user-role">{user.role}</span>
+              <span className="tech-user-name">{userFullName}</span>
+              <span className="tech-user-role">Lab Technician</span>
             </div>
           </div>
         </div>
@@ -162,7 +228,7 @@ const LabOrders: React.FC = () => {
               <h4 className="tech-nav-section-title">Main</h4>
               <button className="tech-nav-item" onClick={() => navigate('/technician/dashboard')}>
                 <span className="tech-nav-icon">🏠</span>
-                <span className="tech-nav-label">Home</span>
+                <span className="tech-nav-label">Dashboard</span>
               </button>
               <button className="tech-nav-item active" onClick={() => navigate('/technician/lab-orders')}>
                 <span className="tech-nav-icon">📋</span>
@@ -180,10 +246,6 @@ const LabOrders: React.FC = () => {
                 <span className="tech-nav-icon">👤</span>
                 <span className="tech-nav-label">Profile</span>
               </button>
-              <button className="tech-nav-item" >
-                <span className="tech-nav-icon">❓</span>
-                <span className="tech-nav-label">Help / Support</span>
-              </button>
             </div>
           </nav>
 
@@ -200,6 +262,7 @@ const LabOrders: React.FC = () => {
               <h1 className="tech-page-title">Lab Orders</h1>
               <p className="tech-page-subtitle">
                 Manage and track all incoming laboratory diagnostic requests.
+                {orders.length > 0 && ` (${orders.length} orders)`}
               </p>
             </div>
           </div>
@@ -231,22 +294,7 @@ const LabOrders: React.FC = () => {
                 <option>All Priorities</option>
                 <option>Urgent</option>
                 <option>Routine</option>
-                <option>Stat</option>
               </select>
-            </div>
-
-            <div className="lab-filter-group">
-              <label className="lab-filter-label">Date Range</label>
-              <div className="lab-date-picker">
-                <span className="lab-calendar-icon">📅</span>
-                <input
-                  type="text"
-                  className="lab-date-input"
-                  value={dateRange}
-                  onChange={(e) => setDateRange(e.target.value)}
-                  readOnly
-                />
-              </div>
             </div>
 
             <button className="lab-reset-btn" onClick={resetFilters}>
@@ -257,56 +305,80 @@ const LabOrders: React.FC = () => {
           {/* Orders Table */}
           <div className="tech-orders-section">
             <div className="tech-table-container">
-              <table className="tech-table">
-                <thead>
-                  <tr>
-                    <th>Time Received</th>
-                    <th>Order ID</th>
-                    <th>Patient Name</th>
-                    <th>Test Type</th>
-                    <th>Priority</th>
-                    <th>Status</th>
-                    <th>Date</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orders.map((order) => (
-                    <tr key={order.id}>
-                      <td>{order.timeReceived}</td>
-                      <td>{order.orderId}</td>
-                      <td>{order.patientName}</td>
-                      <td>{order.testType}</td>
-                      <td>
-                        <span className="tech-priority-badge urgent">{order.priority}</span>
-                      </td>
-                      <td>{order.status}</td>
-                      <td>{order.date}</td>
-                      <td>
-                        <button className="tech-action-btn">{order.action}</button>
-                      </td>
+              {loading ? (
+                <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
+                  Loading orders...
+                </div>
+              ) : paginatedOrders.length === 0 ? (
+                <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
+                  No orders found.
+                </div>
+              ) : (
+                <table className="tech-table">
+                  <thead>
+                    <tr>
+                      <th>Time Received</th>
+                      <th>Order ID</th>
+                      <th>Patient Name</th>
+                      <th>Test Type</th>
+                      <th>Priority</th>
+                      <th>Status</th>
+                      <th>Date</th>
+                      <th>Action</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {paginatedOrders.map((order) => (
+                      <tr key={order.id}>
+                        <td>{order.timeReceived}</td>
+                        <td>{order.orderId}</td>
+                        <td>{order.patientName}</td>
+                        <td>{order.testType}</td>
+                        <td>
+                          <span className={`tech-priority-badge ${getPriorityClass(order.priority)}`}>
+                            {order.priority}
+                          </span>
+                        </td>
+                        <td>{order.status}</td>
+                        <td>{order.date}</td>
+                        <td>
+                          <button
+                            className="tech-action-btn"
+                            onClick={() => handleOrderAction(order)}
+                            disabled={updating === order.id}
+                          >
+                            {updating === order.id ? 'Updating...' : order.action}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
 
             {/* Pagination */}
-            <div className="lab-pagination">
-              <button
-                className="lab-pagination-btn"
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage(currentPage - 1)}
-              >
-                Previous
-              </button>
-              <button
-                className="lab-pagination-btn primary"
-                onClick={() => setCurrentPage(currentPage + 1)}
-              >
-                Next
-              </button>
-            </div>
+            {orders.length > itemsPerPage && (
+              <div className="lab-pagination">
+                <button
+                  className="lab-pagination-btn"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                >
+                  Previous
+                </button>
+                <span style={{ padding: '0 16px', color: '#666' }}>
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  className="lab-pagination-btn primary"
+                  disabled={currentPage >= totalPages}
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
         </main>
       </div>

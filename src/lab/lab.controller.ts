@@ -187,6 +187,19 @@ export class LabController {
   }
 
   /**
+   * GET /lab/results
+   * Get all lab results (for lab technicians)
+   * IMPORTANT: This route MUST be defined BEFORE /lab/results/:id
+   * Roles: LabTechnician
+   */
+  @Get('results')
+  @Roles('LabTechnician')
+  getAllResults(@Query('isAbnormal') isAbnormal?: string) {
+    const filters = isAbnormal !== undefined ? { isAbnormal: isAbnormal === 'true' } : undefined;
+    return this.labResultService.getAllResults(filters);
+  }
+
+  /**
    * GET /lab/results/unverified
    * Get all unverified results (for clinician review queue)
    * IMPORTANT: This route MUST be defined BEFORE /lab/results/:id
