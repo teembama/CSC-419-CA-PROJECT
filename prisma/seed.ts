@@ -1,5 +1,6 @@
 import { PrismaClient, Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { randomUUID } from 'crypto';
 
 const prisma = new PrismaClient();
 
@@ -82,11 +83,25 @@ async function main() {
 
   const createdPermissions: { id: string; name: string }[] = [];
   for (const perm of permissionsData) {
-    const permission = await prisma.permissions.upsert({
+    // Check if permission exists
+    const existing = await prisma.permissions.findUnique({
       where: { name: perm.name },
-      update: { description: perm.description, category: perm.category },
-      create: perm,
     });
+
+    let permission;
+    if (existing) {
+      permission = await prisma.permissions.update({
+        where: { name: perm.name },
+        data: { description: perm.description, category: perm.category },
+      });
+    } else {
+      permission = await prisma.permissions.create({
+        data: {
+          id: randomUUID(),
+          ...perm,
+        },
+      });
+    }
     createdPermissions.push({ id: permission.id, name: permission.name });
   }
   console.log('✅ Permissions created\n');
@@ -133,10 +148,10 @@ async function main() {
   await prisma.role_permissions.deleteMany({});
 
   const rolePermData = [
-    ...adminPermIds.map(pid => ({ role_id: adminRole.id, permission_id: pid })),
-    ...clinicianPermIds.map(pid => ({ role_id: clinicianRole.id, permission_id: pid })),
-    ...patientPermIds.map(pid => ({ role_id: patientRole.id, permission_id: pid })),
-    ...labTechPermIds.map(pid => ({ role_id: labTechnicianRole.id, permission_id: pid })),
+    ...adminPermIds.map(pid => ({ id: randomUUID(), role_id: adminRole.id, permission_id: pid })),
+    ...clinicianPermIds.map(pid => ({ id: randomUUID(), role_id: clinicianRole.id, permission_id: pid })),
+    ...patientPermIds.map(pid => ({ id: randomUUID(), role_id: patientRole.id, permission_id: pid })),
+    ...labTechPermIds.map(pid => ({ id: randomUUID(), role_id: labTechnicianRole.id, permission_id: pid })),
   ];
 
   await prisma.role_permissions.createMany({
@@ -151,150 +166,151 @@ async function main() {
   // Create demo users
   console.log('Creating demo users...');
 
+  // Helper function for user upsert with explicit ID
+  async function upsertUser(email: string, data: {
+    password_hash: string;
+    first_name: string;
+    last_name: string;
+    phone_number?: string;
+    role_id: number;
+    is_active?: boolean;
+    address?: string;
+    city?: string;
+    state?: string;
+    zip_code?: string;
+  }) {
+    const existing = await prisma.users.findUnique({ where: { email } });
+    if (existing) {
+      return existing;
+    }
+    return prisma.users.create({
+      data: {
+        id: randomUUID(),
+        email,
+        password_hash: data.password_hash,
+        first_name: data.first_name,
+        last_name: data.last_name,
+        phone_number: data.phone_number,
+        role_id: data.role_id,
+        is_active: data.is_active,
+        address: data.address,
+        city: data.city,
+        state: data.state,
+        zip_code: data.zip_code,
+      },
+    });
+  }
+
   // Patient
-  const patient = await prisma.users.upsert({
-    where: { email: 'patient@citycare.com' },
-    update: {},
-    create: {
-      email: 'patient@citycare.com',
-      password_hash: passwordHash,
-      first_name: 'Demo',
-      last_name: 'Patient',
-      phone_number: '+1234567890',
-      role_id: patientRole.id,
-      is_active: true,
-      address: '123 Health Avenue',
-      city: 'Lagos',
-      state: 'Lagos State',
-      zip_code: '100001',
-    },
+  const patient = await upsertUser('patient@citycare.com', {
+    password_hash: passwordHash,
+    first_name: 'Demo',
+    last_name: 'Patient',
+    phone_number: '+1234567890',
+    role_id: patientRole.id,
+    is_active: true,
+    address: '123 Health Avenue',
+    city: 'Lagos',
+    state: 'Lagos State',
+    zip_code: '100001',
   });
   console.log(`  ✅ Patient: patient@citycare.com`);
 
   // Additional patients
-  const patient2 = await prisma.users.upsert({
-    where: { email: 'john.doe@citycare.com' },
-    update: {},
-    create: {
-      email: 'john.doe@citycare.com',
-      password_hash: passwordHash,
-      first_name: 'John',
-      last_name: 'Doe',
-      phone_number: '+1234567891',
-      role_id: patientRole.id,
-      is_active: true,
-    },
+  const patient2 = await upsertUser('john.doe@citycare.com', {
+    password_hash: passwordHash,
+    first_name: 'John',
+    last_name: 'Doe',
+    phone_number: '+1234567891',
+    role_id: patientRole.id,
+    is_active: true,
   });
   console.log(`  ✅ Patient: john.doe@citycare.com`);
 
-  const patient3 = await prisma.users.upsert({
-    where: { email: 'jane.smith@citycare.com' },
-    update: {},
-    create: {
-      email: 'jane.smith@citycare.com',
-      password_hash: passwordHash,
-      first_name: 'Jane',
-      last_name: 'Smith',
-      phone_number: '+1234567892',
-      role_id: patientRole.id,
-      is_active: true,
-    },
+  const patient3 = await upsertUser('jane.smith@citycare.com', {
+    password_hash: passwordHash,
+    first_name: 'Jane',
+    last_name: 'Smith',
+    phone_number: '+1234567892',
+    role_id: patientRole.id,
+    is_active: true,
   });
   console.log(`  ✅ Patient: jane.smith@citycare.com`);
 
   // Clinicians
-  const clinician = await prisma.users.upsert({
-    where: { email: 'clinician@citycare.com' },
-    update: {},
-    create: {
-      email: 'clinician@citycare.com',
-      password_hash: passwordHash,
-      first_name: 'Dr. Sarah',
-      last_name: 'Johnson',
-      phone_number: '+1987654321',
-      role_id: clinicianRole.id,
-      is_active: true,
-    },
+  const clinician = await upsertUser('clinician@citycare.com', {
+    password_hash: passwordHash,
+    first_name: 'Dr. Sarah',
+    last_name: 'Johnson',
+    phone_number: '+1987654321',
+    role_id: clinicianRole.id,
+    is_active: true,
   });
   console.log(`  ✅ Clinician: clinician@citycare.com`);
 
-  const clinician2 = await prisma.users.upsert({
-    where: { email: 'dr.williams@citycare.com' },
-    update: {},
-    create: {
-      email: 'dr.williams@citycare.com',
-      password_hash: passwordHash,
-      first_name: 'Dr. Michael',
-      last_name: 'Williams',
-      phone_number: '+1987654322',
-      role_id: clinicianRole.id,
-      is_active: true,
-    },
+  const clinician2 = await upsertUser('dr.williams@citycare.com', {
+    password_hash: passwordHash,
+    first_name: 'Dr. Michael',
+    last_name: 'Williams',
+    phone_number: '+1987654322',
+    role_id: clinicianRole.id,
+    is_active: true,
   });
   console.log(`  ✅ Clinician: dr.williams@citycare.com`);
 
   // Admin
-  const admin = await prisma.users.upsert({
-    where: { email: 'admin@citycare.com' },
-    update: {},
-    create: {
-      email: 'admin@citycare.com',
-      password_hash: passwordHash,
-      first_name: 'System',
-      last_name: 'Admin',
-      phone_number: '+1555555555',
-      role_id: adminRole.id,
-      is_active: true,
-    },
+  const admin = await upsertUser('admin@citycare.com', {
+    password_hash: passwordHash,
+    first_name: 'System',
+    last_name: 'Admin',
+    phone_number: '+1555555555',
+    role_id: adminRole.id,
+    is_active: true,
   });
   console.log(`  ✅ Admin: admin@citycare.com`);
 
   // Lab Technician
-  const labTechnician = await prisma.users.upsert({
-    where: { email: 'technician@citycare.com' },
-    update: {},
-    create: {
-      email: 'technician@citycare.com',
-      password_hash: passwordHash,
-      first_name: 'Peter',
-      last_name: 'Parker',
-      phone_number: '+1666666666',
-      role_id: labTechnicianRole.id,
-      is_active: true,
-    },
+  const labTechnician = await upsertUser('technician@citycare.com', {
+    password_hash: passwordHash,
+    first_name: 'Peter',
+    last_name: 'Parker',
+    phone_number: '+1666666666',
+    role_id: labTechnicianRole.id,
+    is_active: true,
   });
   console.log(`  ✅ LabTechnician: technician@citycare.com\n`);
 
   // Create patient charts
   console.log('Creating patient charts...');
-  const chart1 = await prisma.patient_charts.upsert({
-    where: { patient_id: patient.id },
-    update: {},
-    create: {
-      patient_id: patient.id,
-      blood_type: 'O+',
-      dob: new Date('1990-05-15'),
-    },
+
+  // Helper function for chart upsert with explicit ID
+  async function upsertChart(patientId: string, data: { blood_type: string; dob: Date }) {
+    const existing = await prisma.patient_charts.findUnique({ where: { patient_id: patientId } });
+    if (existing) {
+      return existing;
+    }
+    return prisma.patient_charts.create({
+      data: {
+        id: randomUUID(),
+        patient_id: patientId,
+        ...data,
+      },
+    });
+  }
+
+  const chart1 = await upsertChart(patient.id, {
+    blood_type: 'O+',
+    dob: new Date('1990-05-15'),
   });
 
-  const chart2 = await prisma.patient_charts.upsert({
-    where: { patient_id: patient2.id },
-    update: {},
-    create: {
-      patient_id: patient2.id,
-      blood_type: 'A+',
-      dob: new Date('1985-08-22'),
-    },
+  const chart2 = await upsertChart(patient2.id, {
+    blood_type: 'A+',
+    dob: new Date('1985-08-22'),
   });
 
-  const chart3 = await prisma.patient_charts.upsert({
-    where: { patient_id: patient3.id },
-    update: {},
-    create: {
-      patient_id: patient3.id,
-      blood_type: 'B-',
-      dob: new Date('1992-03-10'),
-    },
+  const chart3 = await upsertChart(patient3.id, {
+    blood_type: 'B-',
+    dob: new Date('1992-03-10'),
   });
   console.log('✅ Patient charts created\n');
 
@@ -302,9 +318,9 @@ async function main() {
   console.log('Creating allergies...');
   await prisma.patient_allergies.createMany({
     data: [
-      { chart_id: chart1.id, allergen_name: 'Penicillin', severity: 'High' },
-      { chart_id: chart1.id, allergen_name: 'Peanuts', severity: 'Moderate' },
-      { chart_id: chart2.id, allergen_name: 'Sulfa drugs', severity: 'High' },
+      { id: randomUUID(), chart_id: chart1.id, allergen_name: 'Penicillin', severity: 'High' },
+      { id: randomUUID(), chart_id: chart1.id, allergen_name: 'Peanuts', severity: 'Moderate' },
+      { id: randomUUID(), chart_id: chart2.id, allergen_name: 'Sulfa drugs', severity: 'High' },
     ],
     skipDuplicates: true,
   });
@@ -424,6 +440,7 @@ async function main() {
     try {
       await prisma.appt_bookings.create({
         data: {
+          id: randomUUID(),
           patient_id: bookingData[i].patientRef.id,
           slot_id: availableSlots[i].id,
           status: bookingData[i].status,
@@ -442,6 +459,7 @@ async function main() {
   console.log('Creating patient encounters...');
   const encounter1 = await prisma.patient_encounters.create({
     data: {
+      id: randomUUID(),
       chart_id: chart1.id,
       clinician_id: clinician.id,
       status: 'Closed',
@@ -451,6 +469,7 @@ async function main() {
 
   const encounter2 = await prisma.patient_encounters.create({
     data: {
+      id: randomUUID(),
       chart_id: chart2.id,
       clinician_id: clinician.id,
       status: 'Closed',
@@ -461,6 +480,7 @@ async function main() {
   // Open encounter for active patient (shows in clinician's current patients)
   const encounter3 = await prisma.patient_encounters.create({
     data: {
+      id: randomUUID(),
       chart_id: chart3.id,
       clinician_id: clinician.id,
       status: 'Open',
@@ -471,6 +491,7 @@ async function main() {
   // Another recent encounter
   const encounter4 = await prisma.patient_encounters.create({
     data: {
+      id: randomUUID(),
       chart_id: chart1.id,
       clinician_id: clinician2.id,
       status: 'Closed',
@@ -484,6 +505,7 @@ async function main() {
   await prisma.patient_notes_soap.createMany({
     data: [
       {
+        id: randomUUID(),
         encounter_id: encounter1.id,
         subjective: 'Patient reports mild headache and fatigue for the past 3 days.',
         objective: 'Vitals: BP 120/80, HR 72, Temp 98.6°F. Alert and oriented.',
@@ -492,6 +514,7 @@ async function main() {
         vitals: { bloodPressure: '120/80', heartRate: '72', temperature: '98.6', weight: '70' },
       },
       {
+        id: randomUUID(),
         encounter_id: encounter2.id,
         subjective: 'Patient here for diabetes management follow-up.',
         objective: 'Vitals: BP 130/85, HR 78. Recent A1C: 7.2%',
@@ -500,6 +523,7 @@ async function main() {
         vitals: { bloodPressure: '130/85', heartRate: '78', temperature: '98.4', weight: '82' },
       },
       {
+        id: randomUUID(),
         encounter_id: encounter3.id,
         subjective: 'New patient presenting with persistent cough for 1 week.',
         objective: 'Vitals: BP 118/76, HR 80, Temp 99.1°F. Lungs clear, mild throat erythema.',
@@ -508,6 +532,7 @@ async function main() {
         vitals: { bloodPressure: '118/76', heartRate: '80', temperature: '99.1', weight: '65' },
       },
       {
+        id: randomUUID(),
         encounter_id: encounter4.id,
         subjective: 'Follow-up for medication adjustment.',
         objective: 'Vitals: BP 125/82, HR 70, Temp 98.4°F.',
@@ -524,6 +549,7 @@ async function main() {
   await prisma.patient_prescriptions.createMany({
     data: [
       {
+        id: randomUUID(),
         encounter_id: encounter1.id,
         medication_name: 'Ibuprofen',
         dosage: '400mg',
@@ -531,6 +557,7 @@ async function main() {
         duration: '7 days',
       },
       {
+        id: randomUUID(),
         encounter_id: encounter2.id,
         medication_name: 'Metformin',
         dosage: '500mg',
@@ -538,6 +565,7 @@ async function main() {
         duration: '90 days',
       },
       {
+        id: randomUUID(),
         encounter_id: encounter2.id,
         medication_name: 'Lisinopril',
         dosage: '10mg',
@@ -552,6 +580,7 @@ async function main() {
   console.log('Creating lab orders...');
   const labOrder1 = await prisma.lab_orders.create({
     data: {
+      id: randomUUID(),
       encounter_id: encounter1.id,
       priority: 'Routine',
       status: 'Completed',
@@ -560,6 +589,7 @@ async function main() {
 
   const labOrder2 = await prisma.lab_orders.create({
     data: {
+      id: randomUUID(),
       encounter_id: encounter2.id,
       priority: 'STAT',
       status: 'Pending',
@@ -568,6 +598,7 @@ async function main() {
 
   const labOrder3 = await prisma.lab_orders.create({
     data: {
+      id: randomUUID(),
       encounter_id: encounter2.id,
       priority: 'Routine',
       status: 'Ordered',
@@ -577,6 +608,7 @@ async function main() {
   // Additional lab orders for more dashboard data
   const labOrder4 = await prisma.lab_orders.create({
     data: {
+      id: randomUUID(),
       encounter_id: encounter3.id,
       priority: 'STAT',
       status: 'InProgress',
@@ -585,6 +617,7 @@ async function main() {
 
   const labOrder5 = await prisma.lab_orders.create({
     data: {
+      id: randomUUID(),
       encounter_id: encounter4.id,
       priority: 'Routine',
       status: 'Completed',
@@ -593,6 +626,7 @@ async function main() {
 
   const labOrder6 = await prisma.lab_orders.create({
     data: {
+      id: randomUUID(),
       encounter_id: encounter3.id,
       priority: 'Routine',
       status: 'Pending',
@@ -603,32 +637,32 @@ async function main() {
   // Create lab test items
   console.log('Creating lab test items...');
   const testItem1 = await prisma.lab_test_items.create({
-    data: { order_id: labOrder1.id, test_name: 'Complete Blood Count (CBC)' },
+    data: { id: randomUUID(), order_id: labOrder1.id, test_name: 'Complete Blood Count (CBC)' },
   });
   const testItem2 = await prisma.lab_test_items.create({
-    data: { order_id: labOrder1.id, test_name: 'Basic Metabolic Panel' },
+    data: { id: randomUUID(), order_id: labOrder1.id, test_name: 'Basic Metabolic Panel' },
   });
   const testItem3 = await prisma.lab_test_items.create({
-    data: { order_id: labOrder2.id, test_name: 'Hemoglobin A1C' },
+    data: { id: randomUUID(), order_id: labOrder2.id, test_name: 'Hemoglobin A1C' },
   });
   const testItem4 = await prisma.lab_test_items.create({
-    data: { order_id: labOrder2.id, test_name: 'Lipid Panel' },
+    data: { id: randomUUID(), order_id: labOrder2.id, test_name: 'Lipid Panel' },
   });
   const testItem5 = await prisma.lab_test_items.create({
-    data: { order_id: labOrder3.id, test_name: 'Urinalysis' },
+    data: { id: randomUUID(), order_id: labOrder3.id, test_name: 'Urinalysis' },
   });
   // Additional test items for new lab orders
   const testItem6 = await prisma.lab_test_items.create({
-    data: { order_id: labOrder4.id, test_name: 'COVID-19 PCR' },
+    data: { id: randomUUID(), order_id: labOrder4.id, test_name: 'COVID-19 PCR' },
   });
   const testItem7 = await prisma.lab_test_items.create({
-    data: { order_id: labOrder4.id, test_name: 'Influenza A/B' },
+    data: { id: randomUUID(), order_id: labOrder4.id, test_name: 'Influenza A/B' },
   });
   const testItem8 = await prisma.lab_test_items.create({
-    data: { order_id: labOrder5.id, test_name: 'Comprehensive Metabolic Panel' },
+    data: { id: randomUUID(), order_id: labOrder5.id, test_name: 'Comprehensive Metabolic Panel' },
   });
   const testItem9 = await prisma.lab_test_items.create({
-    data: { order_id: labOrder6.id, test_name: 'Thyroid Panel (TSH, T3, T4)' },
+    data: { id: randomUUID(), order_id: labOrder6.id, test_name: 'Thyroid Panel (TSH, T3, T4)' },
   });
   console.log('✅ Lab test items created\n');
 
@@ -637,6 +671,7 @@ async function main() {
   await prisma.lab_results.createMany({
     data: [
       {
+        id: randomUUID(),
         test_item_id: testItem1.id,
         result_value: 'WBC: 7.5, RBC: 4.8, Hgb: 14.2, Hct: 42%',
         abnormality_flag: 'Normal',
@@ -644,6 +679,7 @@ async function main() {
         verified_by: clinician.id,
       },
       {
+        id: randomUUID(),
         test_item_id: testItem2.id,
         result_value: 'Glucose: 95, BUN: 15, Creatinine: 1.0',
         abnormality_flag: 'Normal',
@@ -651,12 +687,14 @@ async function main() {
         verified_by: clinician.id,
       },
       {
+        id: randomUUID(),
         test_item_id: testItem3.id,
         result_value: '7.2%',
         abnormality_flag: 'High',
         is_verified: false,
       },
       {
+        id: randomUUID(),
         test_item_id: testItem8.id,
         result_value: 'Glucose: 110, BUN: 18, Creatinine: 0.9, Na: 140, K: 4.2',
         abnormality_flag: 'Normal',
@@ -664,6 +702,7 @@ async function main() {
         verified_by: clinician2.id,
       },
       {
+        id: randomUUID(),
         test_item_id: testItem4.id,
         result_value: 'Total Chol: 220, LDL: 140, HDL: 45, Triglycerides: 175',
         abnormality_flag: 'High',
@@ -677,6 +716,7 @@ async function main() {
   console.log('Creating billing invoices...');
   const invoice1 = await prisma.billing_invoices.create({
     data: {
+      id: randomUUID(),
       patient_id: patient.id,
       encounter_id: encounter1.id,
       total_amount: 150.00,
@@ -686,6 +726,7 @@ async function main() {
 
   const invoice2 = await prisma.billing_invoices.create({
     data: {
+      id: randomUUID(),
       patient_id: patient2.id,
       encounter_id: encounter2.id,
       total_amount: 275.00,
@@ -695,6 +736,7 @@ async function main() {
 
   const invoice3 = await prisma.billing_invoices.create({
     data: {
+      id: randomUUID(),
       patient_id: patient.id,
       total_amount: 50.00,
       status: 'Unpaid',
@@ -706,12 +748,12 @@ async function main() {
   console.log('Creating billing line items...');
   await prisma.billing_line_items.createMany({
     data: [
-      { invoice_id: invoice1.id, description: 'Office Visit', cost: 100.00 },
-      { invoice_id: invoice1.id, description: 'Lab Work - CBC', cost: 50.00 },
-      { invoice_id: invoice2.id, description: 'Office Visit', cost: 100.00 },
-      { invoice_id: invoice2.id, description: 'Lab Work - A1C', cost: 75.00 },
-      { invoice_id: invoice2.id, description: 'Lab Work - Lipid Panel', cost: 100.00 },
-      { invoice_id: invoice3.id, description: 'Prescription Refill Fee', cost: 50.00 },
+      { id: randomUUID(), invoice_id: invoice1.id, description: 'Office Visit', cost: 100.00 },
+      { id: randomUUID(), invoice_id: invoice1.id, description: 'Lab Work - CBC', cost: 50.00 },
+      { id: randomUUID(), invoice_id: invoice2.id, description: 'Office Visit', cost: 100.00 },
+      { id: randomUUID(), invoice_id: invoice2.id, description: 'Lab Work - A1C', cost: 75.00 },
+      { id: randomUUID(), invoice_id: invoice2.id, description: 'Lab Work - Lipid Panel', cost: 100.00 },
+      { id: randomUUID(), invoice_id: invoice3.id, description: 'Prescription Refill Fee', cost: 50.00 },
     ],
   });
   console.log('✅ Line items created\n');
