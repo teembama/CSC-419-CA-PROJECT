@@ -407,9 +407,12 @@ async function main() {
   const insertedSlotIds: string[] = [];
   for (const slot of slots.slice(0, 30)) { // Limit to 30 slots for demo
     try {
+      const slotId = randomUUID();
+      const startIso = slot.start.toISOString();
+      const endIso = slot.end.toISOString();
       const result = await prisma.$queryRaw<{ id: string }[]>`
-        INSERT INTO appt_slots (clinician_id, time_range, status)
-        VALUES (${slot.clinician_id}::uuid, tstzrange(${slot.start}, ${slot.end}), 'Available')
+        INSERT INTO appt_slots (id, clinician_id, time_range, status)
+        VALUES (${slotId}::uuid, ${slot.clinician_id}::uuid, tstzrange(${startIso}::timestamptz, ${endIso}::timestamptz), 'Available')
         ON CONFLICT DO NOTHING
         RETURNING id
       `;
@@ -417,10 +420,10 @@ async function main() {
         insertedSlotIds.push(result[0].id);
       }
     } catch (e) {
-      // Skip if slot already exists
+      console.error('Error inserting slot:', e);
     }
   }
-  console.log('✅ Appointment slots created\n');
+  console.log(`✅ Appointment slots created (${insertedSlotIds.length} slots)\n`);
 
   // Create bookings - multiple for today so dashboards are populated
   console.log('Creating sample bookings...');
